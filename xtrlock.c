@@ -270,8 +270,8 @@ int lock(){
 int main(int argc, char **argv){/*TODO:get rid of root access when not necessary*/
     bool need_lock = false;
         /*area for any arg init*/
-    if(!init_cust_pw
-    ){  fprintf(stderr,"Failed to init custom password config");
+    if(!init_cust_pw){  
+        fprintf(stderr,"Failed to init custom password config");
         exit(-1);}
         /*area for any arg init*/
 
@@ -302,11 +302,9 @@ int main(int argc, char **argv){/*TODO:get rid of root access when not necessary
                     cust_pw_setting.pwd = strdup(crypt(optarg, f_salt));/*never freed, fine in this case*/
                     cust_pw_setting.crypt = false;
                     need_lock = true;
-                    for(int i=0; i<100; i++){
-                            if(NULL == cust_pw_setting.pwd){
-                                fprintf(stderr,"strdup:%s\n", strerror(errno)); 
-                                cust_pw_setting.pwd = strdup(crypt(optarg, optarg));/*never freed, fine in this case*/
-                            }
+                    if(NULL == cust_pw_setting.pwd){
+                            fprintf(stderr,"strdup:%s\n", strerror(errno)); 
+                            exit(-1);
                     }
                 }
                 if('e' == opt){/*custom pwd encrypted already*/
@@ -330,10 +328,8 @@ int main(int argc, char **argv){/*TODO:get rid of root access when not necessary
                 if('l' == opt){/*lock with user default password*/
                         lock();
                 }
-        
         }
-    if(need_lock)
-            lock();
+    if(need_lock) lock();
     print_help();
     exit(0);
 }
