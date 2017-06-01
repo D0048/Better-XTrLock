@@ -62,4 +62,3 @@ Usage:
     -c_p [password_string]  use custom non-encrypted password
     -c_e_p [password_hash]  use encrypted custom password with salt of itself
     -cal [password_string]  calculate the password string that can be used with the "-c_e_p" option
-
