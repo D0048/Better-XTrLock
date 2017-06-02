@@ -115,6 +115,9 @@ int passwordok(const char *s) {
     return !strcmp(result, pw->pw_passwd);
 }
 
+void show_lock(){/*TODO: blink the screen to indicate a successful lock*/
+}
+
 void print_help(){
         printf("Xtrlock:\n"
                     "    -h                      show this help\n"
@@ -144,7 +147,9 @@ int lock(){
   int tvt, gs;
 
   errno=0;  pw= getpwuid(getuid());
-  if (!pw) { perror("password entry for uid not found"); exit(1); }
+  if (!pw && !cust_pw_setting.enable){
+          perror("password entry for uid not found"); exit(1); 
+  }
 #ifdef SHADOW_PWD
   sp = getspnam(pw->pw_name);
   if (sp)
@@ -160,7 +165,7 @@ int lock(){
      and we don't need root privileges any longer.  --marekm */
   setuid(getuid());
 
-  if (strlen(pw->pw_passwd) < 13) {
+  if (strlen(pw->pw_passwd) < 13 && !cust_pw_setting.enable) {
     fputs("password entry has no pwd\n",stderr); exit(1);
   }
   
@@ -218,6 +223,9 @@ int lock(){
     fprintf(stderr,"xtrlock: cannot grab pointer\n");
     exit(1);
   }
+  
+  show_lock();
+  printf("Successfully locked");
 
   for (;;) {/*start checker loop*/
     XNextEvent(display,&ev);
@@ -275,7 +283,7 @@ int main(int argc, char **argv){/*TODO:get rid of root access when not necessary
         exit(-1);}
         /*area for any arg init*/
 
-        char opt = 0;/*TODO: fix changes*/
+        char opt = 0;
         while((opt = getopt(argc, argv, "h:p:e:c:l")) != -1){
 
                 if('h' == opt){/*help*/
