@@ -43,6 +43,8 @@
 #include <shadow.h>
 #endif
 
+#include "lock_imgdata.h"
+
 //#define DEBUG
 #ifdef DEBUG
 #define debug_print(...) do{{printf(__VA_ARGS__);} }while (0)
@@ -53,6 +55,7 @@
 Display *display;
 Window window, root;
 
+//#define DISALLOW_ONE_C_PW
 #define TIMEOUTPERATTEMPT 30000
 #define MAXGOODWILL  (TIMEOUTPERATTEMPT*5)
 #define INITIALGOODWILL MAXGOODWILL
@@ -185,7 +188,8 @@ int lock(){
 
 
 
-  csr= XCreateBitmapFromData(display,window,csr_bits,1,1);
+  csr= XCreateBitmapFromData(display,window,cdata_lockimg,1000,1000);
+  //csr= XCreateBitmapFromData(display,window,csr_bits,1,1);
 
   cursor= XCreatePixmapCursor(display,csr,csr,&xcolor,&xcolor,1,1);
 
