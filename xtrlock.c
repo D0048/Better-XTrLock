@@ -81,7 +81,7 @@ int passwordok(const char *s) {
     
     const char* f_salt;
     if(strlen(s) == 1){/*salt need to be at least two characters long to prevent segmentation fault*/
-           #ifdef DISALLOW_ONE_C_PW /*if one character password is allowed*/
+             #ifdef DISALLOW_ONE_C_PW /*if one character password is allowed*/
             debug_print("str too short: %s, %zd \n",s,strlen(s)); 
             return false;
             #else
@@ -93,7 +93,7 @@ int passwordok(const char *s) {
             #endif
     }
     else{
-                f_salt = s;
+            f_salt = s;
     }
 
     if(cust_pw_setting.enable){
@@ -125,7 +125,7 @@ void print_help(){
                     "    -l                      lock immediately with user's default password\n"
                     "    -p [password_string]    use custom non-encrypted password\n"
                     "    -e [password_hash]      use encrypted custom password with salt of itself\n"
-                    "    -c [password_string]    calculate the password string that can be used with the \"-c_e_p\" option\n"
+                    "    -c [password_string]    calculate the password string that can be used with the \"-c\" option\n"
                     "    -b                      lock with a blank screen\n"
                     "    -d [delay_usec]         u seconds the screen blinks on successful locks(0 for no-delay & 100000 for 0.1 s)\n"
             "Thanks for using!\n");
@@ -182,13 +182,13 @@ int lock(){
   attrib.override_redirect= True;
   attrib.background_pixel = BlackPixel(display, DefaultScreen(display));
   
-  blank_window= XCreateWindow(display,DefaultRootWindow(display),/*blank screen*/
+  blank_window= XCreateWindow(display,DefaultRootWindow(display),/*init blank window*/
                         0,0,DisplayWidth(display, DefaultScreen(display)),
                         DisplayHeight(display, DefaultScreen(display)),
                         0,DefaultDepth(display, DefaultScreen(display)), CopyFromParent, DefaultVisual(display, DefaultScreen(display)),
                         CWOverrideRedirect|CWBackPixel,&attrib);
 
-  trans_window= XCreateWindow(display,DefaultRootWindow(display),
+  trans_window= XCreateWindow(display,DefaultRootWindow(display),/*init window identical to Background*/
                         0,0,1,1,0,CopyFromParent,InputOnly,CopyFromParent,
                         CWOverrideRedirect,&attrib);
   
@@ -239,7 +239,7 @@ int lock(){
   if((!blank_screen) && (blink_delay!= 0)){/*blink to indicate a successful lock*/
     XMapWindow(display, blank_window);
     XFlush(display);
-    usleep(blink_delay);/*0.1s*/
+    usleep(blink_delay);/*0.1s as default, or custom value*/
     XUnmapWindow(display, blank_window);
     debug_print("Unmapped after %i u seconds\n", blink_delay);
     XMapWindow(display, trans_window);

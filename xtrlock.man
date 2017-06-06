@@ -80,6 +80,6 @@ Usage:
     -h                      show this help
     -p [password_string]    use custom non-encrypted password
     -e [password_hash]      use encrypted custom password with salt of itself
-    -c [password_string]    calculate the password string that can be used with the "-c_e_p" option
+    -c [password_string]    calculate the password string that can be used with the "-c" option
     -b                      lock with a blank screen
     -d [delay]              u seconds the screen blinks on successful locks(0 for no-delay & 100000 for 0.1 s), default = 0.1s
