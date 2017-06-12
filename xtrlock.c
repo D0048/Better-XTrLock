@@ -86,7 +86,7 @@ int passwordok(const char* s)
 
         const char* f_salt;
         if (strlen(s) == 1) { /*salt need to be at least two characters long to prevent segmentation fault*/
-#ifdef DISALLOW_ONE_C_PW      /*if one character password is allowed*/
+#ifdef DISALLOW_ONE_C_PW      /*if one character password is not allowed*/
                 debug_print("str too short: %s, %zd \n", s, strlen(s));
                 return false;
 #else
@@ -137,7 +137,7 @@ void print_help()
                "Thanks for using!\n");
 }
 
-int lock()
+int lock()/*TODO: -l can not verify*/
 {
         XEvent ev;
         KeySym ks;
@@ -150,38 +150,41 @@ int lock()
         XColor xcolor;
         int ret;
         static char csr_bits[] = { 0x00 };
-#ifdef SHADOW_PWD
-        struct spwd* sp;
-#endif
         struct timeval tv;
         int tvt, gs;
 
-        errno = 0;
-        pw = getpwuid(getuid());
-        if (!pw && !cust_pw_setting.enable) {
-                perror("password entry for uid not found");
-                exit(1);
-        }
+        if (!cust_pw_setting.enable) {
+                debug_print("Sensing user pwd\n");
 #ifdef SHADOW_PWD
-        sp = getspnam(pw->pw_name);
-        if (sp)
-                pw->pw_passwd = sp->sp_pwdp;
-        endspent();
+                struct spwd* sp;
 #endif
 
-        /* logically, if we need to do the following then the same
-           applies to being installed setgid shadow.
-           we do this first, because of a bug in linux. --jdamery */
-        setgid(getgid());
-        /* we can be installed setuid root to support shadow passwords,
-           and we don't need root privileges any longer.  --marekm */
-        setuid(getuid());
+                errno = 0;
+                pw = getpwuid(getuid());
+                if (!pw) {
+                        perror("password entry for uid not found");
+                        exit(1);
+                }
+#ifdef SHADOW_PWD
+                sp = getspnam(pw->pw_name);
+                if (sp)
+                        pw->pw_passwd = sp->sp_pwdp;
+                endspent();
+#endif
 
-        if (strlen(pw->pw_passwd) < 13 && !cust_pw_setting.enable) {
-                fputs("password entry has no pwd\n", stderr);
-                exit(1);
+                /* logically, if we need to do the following then the same
+                applies to being installed setgid shadow.
+                we do this first, because of a bug in linux. --jdamery */
+                setgid(getgid());
+                /* we can be installed setuid root to support shadow passwords,
+                and we don't need root privileges any longer.  --marekm */
+                setuid(getuid());
+
+                if (strlen(pw->pw_passwd) < 1) {
+                        fputs("password entry has no pwd\n", stderr);
+                        exit(1);
+                }
         }
-
         display = XOpenDisplay(0);
 
         if (display == NULL) {
@@ -334,7 +337,7 @@ int main(int argc, char** argv)
                 if ('p' == opt) { /*custom pwd without encryption*/
                         char* f_salt;
                         if (strlen(optarg) == 1) { /*salt need to be at least two characters long to prevent segmentation fault*/
-#ifdef DISALLOW_ONE_C_PW    /*if one character password is allowed*/
+#ifdef DISALLOW_ONE_C_PW                           /*if one character password is allowed*/
                                 fprintf(stderr, "One character password is disallowed\n");
                                 exit(1);
 #else
