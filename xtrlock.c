@@ -35,6 +35,7 @@
 #include <string.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <time.h>
 #include <unistd.h>
 #include <unistd.h>
 #include <values.h>
@@ -57,8 +58,8 @@
 
 Display* display;
 Window window, blank_window, trans_window;
+FILE* fp_dev_rand = NULL; /*never closed*/
 
-//#define DISALLOW_ONE_C_PW
 #define TIMEOUTPERATTEMPT 30000
 #define MAXGOODWILL (TIMEOUTPERATTEMPT * 5)
 #define INITIALGOODWILL MAXGOODWILL
@@ -71,12 +72,6 @@ struct { /*Setting correspond to the custom passwd setting. --d0048*/
         char* pwd;
 } cust_pw_setting;
 
-bool init_cust_pw()
-{
-        cust_pw_setting.enable = false;
-        return true;
-}
-
 struct passwd* pw;
 int passwordok(const char* s)
 {
@@ -86,16 +81,11 @@ int passwordok(const char* s)
 
         const char* f_salt;
         if (strlen(s) == 1) { /*salt need to be at least two characters long to prevent segmentation fault*/
-#ifdef DISALLOW_ONE_C_PW      /*if one character password is not allowed*/
-                debug_print("str too short: %s, %zd \n", s, strlen(s));
-                return false;
-#else
                 const char salt[2] = { *s, *s };
                 debug_print("salt:%s\n", salt);
                 f_salt = salt;
                 fprintf(stderr, "One character password is depreciated\n");
                 debug_print("One c pwd, double as salt\n");
-#endif
         } else {
                 f_salt = s;
         }
@@ -135,6 +125,13 @@ void print_help()
                "    -b                      lock with a blank screen\n"
                "    -d [delay_usec]         u seconds the screen blinks on successful locks(0 for no-delay & 100000 for 0.1 s)\n"
                "Thanks for using!\n");
+}
+
+char rand_ch()
+{ /*range of letters in int: 65-122*/
+        char ch;
+        fscanf(fp_dev_rand, "%c", &ch);
+        return (char)(ch % 57 + 65);
 }
 
 int lock()
@@ -323,10 +320,23 @@ loop_x:   /*loop exit*/
 
 int main(int argc, char** argv)
 { /*TODO:get rid of root access when not necessary*/
-        /*area for any arg init*/
+        /*TODO: Enhance salt generation*/
+        /*TODO: rand gen not in standard char*/
         bool need_lock = false;
-        /*area for any arg init*/
-
+        cust_pw_setting.enable = false;
+        errno = 0;
+        if (!fp_dev_rand) {
+                fp_dev_rand = fopen("/dev/random", "r");
+                if (!fp_dev_rand) {
+                        fprintf(stderr, "failed to open /dev/random: %s\n", strerror(errno));
+                        exit(1);
+                }
+        }
+        int i = 100;
+        while (i-- > 0) {
+                usleep(10000);
+                printf("rand_ch: %c \n", rand_ch());
+        }
         char opt = 0;
         while ((opt = getopt(argc, argv, ":h:p:e:c:l:b:d:")) != -1) {
 
@@ -337,14 +347,9 @@ int main(int argc, char** argv)
                 if ('p' == opt) { /*custom pwd without encryption*/
                         char* f_salt;
                         if (strlen(optarg) == 1) { /*salt need to be at least two characters long to prevent segmentation fault*/
-#ifdef DISALLOW_ONE_C_PW                           /*if one character password is allowed*/
-                                fprintf(stderr, "One character password is disallowed\n");
-                                exit(1);
-#else
                                 char salt[2] = { *optarg, *optarg };
                                 f_salt = salt;
                                 fprintf(stderr, "One character password is depreciated\n");
-#endif
                         } else {
                                 f_salt = optarg;
                         }
