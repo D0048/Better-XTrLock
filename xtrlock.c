@@ -137,7 +137,7 @@ void print_help()
                "Thanks for using!\n");
 }
 
-int lock()/*TODO: -l can not verify*/
+int lock()
 {
         XEvent ev;
         KeySym ks;
@@ -158,7 +158,6 @@ int lock()/*TODO: -l can not verify*/
 #ifdef SHADOW_PWD
                 struct spwd* sp;
 #endif
-
                 errno = 0;
                 pw = getpwuid(getuid());
                 if (!pw) {
@@ -180,10 +179,11 @@ int lock()/*TODO: -l can not verify*/
                 and we don't need root privileges any longer.  --marekm */
                 setuid(getuid());
 
-                if (strlen(pw->pw_passwd) < 1) {
+                if (strlen(pw->pw_passwd) <= 1) {
                         fputs("password entry has no pwd\n", stderr);
                         exit(1);
                 }
+                debug_print("Passwd sensed:%s\n", pw->pw_passwd);
         }
         display = XOpenDisplay(0);
 
