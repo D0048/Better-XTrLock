@@ -93,23 +93,25 @@ int passwordok(const char* s)
         if (cust_pw_setting.enable) {
                 debug_print("Entered_de: %s\n", s);
                 debug_print("Original_de: %s\n", cust_pw_setting.pwd);
-                char* enter = strdup(crypt(s, f_salt));
+                char* enter = strdup(crypt(s, cust_pw_setting.pwd));
                 char* original = cust_pw_setting.pwd;
                 if (NULL == enter) {
                         fprintf(stderr, "\"strdup\" or \"crypt\":%s\n", strerror(errno));
                         return false;
                 }
-                debug_print("Entered: %s\n", enter);
+                debug_print("Entered:  %s\n", enter);
                 debug_print("Original: %s\n", original);
                 unsigned int i = strcmp(enter, original);
                 free(enter);
                 return !i;
-        } else {
+        } else { /*salt in the second argument seems to be automatically used by crypt?*/
                 char* result = crypt(s, pw->pw_passwd);
                 if (NULL == result) {
                         fprintf(stderr, "\"strdup\" or \"crypt\":%s\n", strerror(errno));
                         return false;
                 }
+                debug_print("Entered_de:  %s\n", result);
+                debug_print("Original_de: %s\n", pw->pw_passwd);
                 return !strcmp(result, pw->pw_passwd);
         }
 }
@@ -129,10 +131,10 @@ void print_help()
 
 char rand_ch()
 { /*range of letters in int: 97-122(rand % max-min+1+min)*/
-  /*time based rand refreshes too slow thus not the best choice*/
+        /*time based rand refreshes too slow thus not the best choice*/
         char ch;
         fscanf(fp_dev_rand, "%c", &ch);
-        return (char)(ch % (122-97+1) + 97);
+        return (char)(ch % (122 - 97 + 1) + 97);
 }
 
 int lock()
@@ -177,7 +179,7 @@ int lock()
                 and we don't need root privileges any longer.  --marekm */
                 setuid(getuid());
 
-                if (strlen(pw->pw_passwd) <= 1) {
+                if (strlen(pw->pw_passwd) <= 1) { /*mark as 'x', which means shadow password is enabled.*/
                         fputs("password entry has no pwd\n", stderr);
                         exit(1);
                 }
@@ -332,10 +334,6 @@ int main(int argc, char** argv)
                         fprintf(stderr, "failed to open /dev/random: %s\n", strerror(errno));
                         exit(1);
                 }
-        }
-        int i = 1000;
-        while (i-- > 0) {
-                printf("rand_ch: %c \n", rand_ch());
         }
         char opt = 0;
         while ((opt = getopt(argc, argv, ":h:p:e:c:l:b:d:")) != -1) {
