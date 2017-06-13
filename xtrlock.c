@@ -58,7 +58,6 @@
 
 Display* display;
 Window window, blank_window, trans_window;
-FILE* fp_dev_rand = NULL; /*never closed*/
 
 #define TIMEOUTPERATTEMPT 30000
 #define MAXGOODWILL (TIMEOUTPERATTEMPT * 5)
@@ -130,11 +129,9 @@ void print_help()
 }
 
 char rand_ch()
-{ /*range of letters in int: 97-122(rand % max-min+1+min)*/
+{ /*range of characters in int: 35-122(rand % max-min+1+min)*/
         /*time based rand refreshes too slow thus not the best choice*/
-        char ch;
-        fscanf(fp_dev_rand, "%c", &ch);
-        return (char)(ch % (122 - 97 + 1) + 97);
+        return (char)((rand() % (122 - 35 + 1)) + 35);
 }
 
 int lock()
@@ -324,17 +321,24 @@ loop_x:   /*loop exit*/
 int main(int argc, char** argv)
 { /*TODO:get rid of root access when not necessary*/
         /*TODO: Enhance salt generation*/
-        /*TODO: rand gen not in standard char*/
+        errno = 0;
         bool need_lock = false;
         cust_pw_setting.enable = false;
-        errno = 0;
-        if (!fp_dev_rand) {
-                fp_dev_rand = fopen("/dev/random", "r");
+        FILE* fp_dev_rand = NULL; /*never closed*/
+                fp_dev_rand = fopen("/dev/urandom", "r");
                 if (!fp_dev_rand) {
                         fprintf(stderr, "failed to open /dev/random: %s\n", strerror(errno));
                         exit(1);
                 }
-        }
+        unsigned int seed;
+        fread(&seed, sizeof(int), 1, fp_dev_rand);
+        //fscanf(fp_dev_rand, "%u", &seed);
+        debug_print("Read seed from /dev/rand: %u\n", seed);
+        srand(seed);
+        fclose(fp_dev_rand);
+        int i = 10;
+        while (i-- > 0)
+                printf("rand%i:%c\n", 10-i, rand_ch()); 
         char opt = 0;
         while ((opt = getopt(argc, argv, ":h:p:e:c:l:b:d:")) != -1) {
 
