@@ -128,10 +128,11 @@ void print_help()
 }
 
 char rand_ch()
-{ /*range of letters in int: 65-122*/
+{ /*range of letters in int: 97-122(rand % max-min+1+min)*/
+  /*time based rand refreshes too slow thus not the best choice*/
         char ch;
         fscanf(fp_dev_rand, "%c", &ch);
-        return (char)(ch % 57 + 65);
+        return (char)(ch % (122-97+1) + 97);
 }
 
 int lock()
@@ -332,9 +333,8 @@ int main(int argc, char** argv)
                         exit(1);
                 }
         }
-        int i = 100;
+        int i = 1000;
         while (i-- > 0) {
-                usleep(10000);
                 printf("rand_ch: %c \n", rand_ch());
         }
         char opt = 0;
