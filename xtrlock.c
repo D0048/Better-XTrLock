@@ -78,17 +78,6 @@ int passwordok(const char* s)
            salt strings (like the md5-based one on freebsd).  --marekm */
         debug_print("%s, %i\n", s, (int)strlen(s));
 
-        const char* f_salt;
-        if (strlen(s) == 1) { /*salt need to be at least two characters long to prevent segmentation fault*/
-                const char salt[2] = { *s, *s };
-                debug_print("salt:%s\n", salt);
-                f_salt = salt;
-                fprintf(stderr, "One character password is depreciated\n");
-                debug_print("One c pwd, double as salt\n");
-        } else {
-                f_salt = s;
-        }
-
         if (cust_pw_setting.enable) {
                 debug_print("Entered_de: %s\n", s);
                 debug_print("Original_de: %s\n", cust_pw_setting.pwd);
@@ -129,9 +118,10 @@ void print_help()
 }
 
 char rand_ch()
-{ /*range of characters in int: 35-122(rand % max-min+1+min)*/
+{ /*range of characters in int: [A-Z]|[a-z][0-9](rand % max-min+1+min)*/
         /*time based rand refreshes too slow thus not the best choice*/
-        return (char)((rand() % (122 - 35 + 1)) + 35);
+        /*use a-z in this case only*/
+        return (char)((rand() % (90 - 65 + 1)) + 65);
 }
 
 int lock()
@@ -324,21 +314,23 @@ int main(int argc, char** argv)
         errno = 0;
         bool need_lock = false;
         cust_pw_setting.enable = false;
-        FILE* fp_dev_rand = NULL; /*never closed*/
-                fp_dev_rand = fopen("/dev/urandom", "r");
-                if (!fp_dev_rand) {
-                        fprintf(stderr, "failed to open /dev/random: %s\n", strerror(errno));
-                        exit(1);
-                }
+
+        FILE* fp_dev_rand = NULL;
+        fp_dev_rand = fopen("/dev/urandom", "r");
+        if (!fp_dev_rand) {
+                fprintf(stderr, "failed to open /dev/random: %s\n", strerror(errno));
+                exit(1);
+        }
         unsigned int seed;
         fread(&seed, sizeof(int), 1, fp_dev_rand);
         //fscanf(fp_dev_rand, "%u", &seed);
         debug_print("Read seed from /dev/rand: %u\n", seed);
         srand(seed);
         fclose(fp_dev_rand);
+        
         int i = 10;
         while (i-- > 0)
-                printf("rand%i:%c\n", 10-i, rand_ch()); 
+                printf("rand%i:%c\n", 10 - i, rand_ch());
         char opt = 0;
         while ((opt = getopt(argc, argv, ":h:p:e:c:l:b:d:")) != -1) {
 
@@ -347,16 +339,9 @@ int main(int argc, char** argv)
                         exit(0);
                 }
                 if ('p' == opt) { /*custom pwd without encryption*/
-                        char* f_salt;
-                        if (strlen(optarg) == 1) { /*salt need to be at least two characters long to prevent segmentation fault*/
-                                char salt[2] = { *optarg, *optarg };
-                                f_salt = salt;
-                                fprintf(stderr, "One character password is depreciated\n");
-                        } else {
-                                f_salt = optarg;
-                        }
+                        char f_salt[3] = { rand_ch(), rand_ch(), '\0' };
+                        debug_print("salt_generated: %s\n", f_salt);
                         cust_pw_setting.enable = true;
-                        //cust_pw_setting.pwd = crypt(argv[2], argv[2]);
                         cust_pw_setting.pwd = strdup(crypt(optarg, f_salt)); /*never freed, fine in this case*/
                         need_lock = true;
                         if (NULL == cust_pw_setting.pwd) {
@@ -370,13 +355,7 @@ int main(int argc, char** argv)
                         need_lock = true;
                 }
                 if ('c' == opt) { /*encryption of pwd*/
-                        char* f_salt;
-                        if (strlen(optarg) == 1) {
-                                char salt[2] = { *optarg, *optarg };
-                                f_salt = salt;
-                        } else {
-                                f_salt = optarg;
-                        }
+                        char f_salt[2] = { rand_ch(), rand_ch() };
                         printf("%s\n", crypt(optarg, f_salt));
                         exit(0);
                 }
