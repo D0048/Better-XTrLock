@@ -37,7 +37,6 @@
 #include <sys/types.h>
 #include <time.h>
 #include <unistd.h>
-#include <unistd.h>
 #include <values.h>
 
 #ifdef SHADOW_PWD
@@ -56,6 +55,8 @@
         } while (0)
 #endif
 
+#define msleep(x) usleep(x * 1000)
+
 Display* display;
 Window window, blank_window, trans_window;
 
@@ -64,7 +65,7 @@ Window window, blank_window, trans_window;
 #define INITIALGOODWILL MAXGOODWILL
 #define GOODWILLPORTION 0.3
 bool blank_screen = false;
-int blink_delay = 100000;
+int blink_delay = 100;
 
 struct { /*Setting correspond to the custom passwd setting. --d0048*/
         bool enable;
@@ -92,7 +93,7 @@ int passwordok(const char* s)
                 unsigned int i = strcmp(enter, original);
                 free(enter);
                 return !i;
-        } else { /*salt in the second argument seems to be automatically used by crypt?*/
+        } else { /*salt in the second argument seems to be automatically used by crypt*/
                 char* result = crypt(s, pw->pw_passwd);
                 if (NULL == result) {
                         fprintf(stderr, "\"strdup\" or \"crypt\":%s\n", strerror(errno));
@@ -113,7 +114,7 @@ void print_help()
                "    -e [password_hash]      use encrypted custom password with salt of itself\n"
                "    -c [password_string]    calculate the password string that can be used with the \"-c\" option\n"
                "    -b                      lock with a blank screen\n"
-               "    -d [delay_usec]         u seconds the screen blinks on successful locks(0 for no-delay & 100000 for 0.1 s)\n"
+               "    -d [delay_usec]         milliseconds the screen blinks on successful locks(0 for no-delay & 100000 for 0.1 s)\n"
                "Thanks for using!\n");
 }
 
@@ -240,7 +241,7 @@ int lock()
         if (!blank_screen && blink_delay != 0) { /*blink to indicate a successful lock*/
                 XMapWindow(display, blank_window);
                 XFlush(display);
-                usleep(blink_delay); /*0.1s as default, or custom value*/
+                msleep(blink_delay); /*0.1s as default, or custom value*/
                 XUnmapWindow(display, blank_window);
                 debug_print("Unmapped after %i u seconds\n", blink_delay);
                 XMapWindow(display, trans_window);
@@ -309,8 +310,7 @@ loop_x:   /*loop exit*/
 }
 
 int main(int argc, char** argv)
-{ /*TODO:get rid of root access when not necessary*/
-        /*TODO: Enhance salt generation*/
+{ /*TODO: chang usec to milisec*/
         errno = 0;
         bool need_lock = false;
         cust_pw_setting.enable = false;
@@ -327,10 +327,10 @@ int main(int argc, char** argv)
         debug_print("Read seed from /dev/rand: %u\n", seed);
         srand(seed);
         fclose(fp_dev_rand);
-        
+
         int i = 10;
         while (i-- > 0)
-                printf("rand%i:%c\n", 10 - i, rand_ch());
+                debug_print("rand%i:%c\n", 10 - i, rand_ch());
         char opt = 0;
         while ((opt = getopt(argc, argv, ":h:p:e:c:l:b:d:")) != -1) {
 
