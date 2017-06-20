@@ -310,7 +310,7 @@ loop_x:   /*loop exit*/
 }
 
 int main(int argc, char** argv)
-{ /*TODO: chang usec to milisec*/
+{ /*TODO: -b not working*/
         errno = 0;
         bool need_lock = false;
         cust_pw_setting.enable = false;
@@ -365,6 +365,7 @@ int main(int argc, char** argv)
                 }
                 if ('b' == opt) { /*lock with a blank screen*/
                         blank_screen = true;
+                        need_lock = true;
                         debug_print("blank_screen mode \n");
                 }
                 if ('d' == opt) { /*delay of screen blinks*/
