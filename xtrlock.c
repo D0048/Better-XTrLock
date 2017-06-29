@@ -248,6 +248,11 @@ int lock()
                 XFlush(display);
                 debug_print("locked and blinked\n");
         }
+
+        if(blank_screen){
+                XMapWindow(display, blank_window);
+        }
+
         printf("Successfully locked\n");
 
         for (;;) { /*start checker loop*/
@@ -310,7 +315,7 @@ loop_x:   /*loop exit*/
 }
 
 int main(int argc, char** argv)
-{ /*TODO: -b not working*/
+{ /*TODO: add keeper process*/
         errno = 0;
         bool need_lock = false;
         cust_pw_setting.enable = false;
