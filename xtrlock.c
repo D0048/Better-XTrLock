@@ -82,7 +82,7 @@ int passwordok(const char* s)
         if (cust_pw_setting.enable) {
                 debug_print("Entered_de: %s\n", s);
                 debug_print("Original_de: %s\n", cust_pw_setting.pwd);
-                char* enter = strdup(crypt(s, cust_pw_setting.pwd));
+                char* enter = crypt(s, cust_pw_setting.pwd);
                 char* original = cust_pw_setting.pwd;
                 if (NULL == enter) {
                         fprintf(stderr, "\"strdup\" or \"crypt\":%s\n", strerror(errno));
@@ -90,9 +90,7 @@ int passwordok(const char* s)
                 }
                 debug_print("Entered:  %s\n", enter);
                 debug_print("Original: %s\n", original);
-                unsigned int i = strcmp(enter, original);
-                free(enter);
-                return !i;
+                return !strcmp(enter, original);
         } else { /*salt in the second argument seems to be automatically used by crypt*/
                 char* result = crypt(s, pw->pw_passwd);
                 if (NULL == result) {
