@@ -148,7 +148,7 @@ int notify_lock(bool lock){/*0 for unlock, 1 for lock. Function relies on notify
                 }
 #endif
                 if (!notify_notification_show(nlock, 0)){
-                        fprintf(stderr, "Fail to notify");
+                        fprintf(stderr, "Fail to notify\n");
                         return -1;
                 }
         }
@@ -171,7 +171,7 @@ int notify_lock(bool lock){/*0 for unlock, 1 for lock. Function relies on notify
                 }
 #endif
                 if (!notify_notification_show(nunlock, 0)){
-                        fprintf(stderr, "Fail to notify");
+                        fprintf(stderr, "Fail to notify\n");
                         return -1;
                 }
         }

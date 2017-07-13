@@ -34,7 +34,7 @@ clean:
 	-rm -f xtrlock.o xtrlock
 install:	xtrlock
 		$(INSTALL) -c -m 2755 -o root -g shadow xtrlock /usr/bin
-		mkdir $(CONFIGPATH)
+		if [ ! -d "$(CONFIGPATH)" ]; then mkdir $(CONFIGPATH); fi
 		$(INSTALL) -c -m 644 lock.png $(CONFIGPATH)
 		$(INSTALL) -c -m 644 unlock.png $(CONFIGPATH)
 
