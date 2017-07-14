@@ -37,6 +37,7 @@
 #include <sys/types.h>
 #include <time.h>
 #include <unistd.h>
+#include <getopt.h>
 #include <values.h>
 #include <libnotify/notify.h>
 #include <gdk-pixbuf/gdk-pixbuf.h>
@@ -377,6 +378,7 @@ loop_x:   /*loop exit*/
 int main(int argc, char** argv)
 { /*TODO: Add keeper process*/
         /*TODO: On lid close*/
+        /*TODO: Support long option*/
         errno = 0;
         bool need_lock = false;
         cust_pw_setting.enable = false;
@@ -393,8 +395,21 @@ int main(int argc, char** argv)
         srand(seed);
         fclose(fp_dev_rand);
 
+        static struct option long_options[] =
+        {
+                {"help", no_argument, NULL, 'h'},
+                {"password", required_argument, NULL, 'p'},
+                {"encrypted-password", required_argument, NULL, 'e'},
+                {"calculate-unencrypted-password", required_argument, NULL, 'c'},
+                {"lock-user-password", no_argument, NULL, 'l'},
+                {"block-screen", no_argument, NULL, 'b'},
+                {"delay-of-blink", required_argument, NULL, 'd'},
+                {"notify", no_argument, NULL, 'n'},
+                {NULL, 0, NULL, 0}
+        };
         char opt = 0;
-        while ((opt = getopt(argc, argv, "hp:e:c:lbd:n")) != -1) {
+        //while ((opt = getopt(argc, argv, "hp:e:c:lbd:n")) != -1) {
+        while ((opt = getopt_long(argc, argv, "hp:e:c:lbd:n", long_options, NULL)) != -1) {
                 debug_print("Processing args: \"%c|%c\"\n", opt, optopt);
 
                 if ('h' == opt) { /*help(no arg)*/
@@ -440,9 +455,13 @@ int main(int argc, char** argv)
                 if('n' == opt){/*send notification*/
                         send_notification = true;
                 }
+                if('?' == opt){
+                        print_help();
+                        exit(1);
+                }
         }
         if (need_lock)
                 lock();
         print_help();
         exit(1);
-        }
+}
