@@ -109,14 +109,14 @@ int passwordok(const char* s)
 void print_help()
 {
         printf("Xtrlock:\n"
-                        "    -h                      show this help\n"
-                        "    -l                      lock immediately with user's default password\n"
-                        "    -p [password_string]    use custom non-encrypted password\n"
-                        "    -e [password_hash]      use encrypted custom password with salt of itself\n"
-                        "    -c [password_string]    calculate the password string that can be used with the \"-c\" option\n"
-                        "    -b                      lock with a blank screen\n"
-                        "    -d [delay_usec]         milliseconds the screen blinks on successful locks(0 for no-delay & 100000 for 0.1 s)\n"
-                        "    -n                      send message notification on lock and unlock\n"
+                        "    -h --help                                    show this help\n"
+                        "    -l --lock-user-password                      lock immediately with the user's default password\n"
+                        "    -p --password           [password_string]    use custom non-encrypted password\n"
+                        "    -e --encrypted-password [password_hash]      use encrypted custom password with salt of itself\n"
+                        "    -c --calculate          [password_string]    calculate the password string that can be used with the \"-c\" option\n"
+                        "    -b --block-screen                            lock with a blank screen\n"
+                        "    -d --delay of blink     [delay_usec]         milliseconds the screen blinks on successful locks(0 for no-delay & 100000 for 0.1 s)\n"
+                        "    -n --notify                                  send message notification on lock and unlock\n"
                         "Thanks for using!\n");
 }
 
@@ -400,7 +400,7 @@ int main(int argc, char** argv)
                 {"help", no_argument, NULL, 'h'},
                 {"password", required_argument, NULL, 'p'},
                 {"encrypted-password", required_argument, NULL, 'e'},
-                {"calculate-unencrypted-password", required_argument, NULL, 'c'},
+                {"calculate", required_argument, NULL, 'c'},
                 {"lock-user-password", no_argument, NULL, 'l'},
                 {"block-screen", no_argument, NULL, 'b'},
                 {"delay-of-blink", required_argument, NULL, 'd'},

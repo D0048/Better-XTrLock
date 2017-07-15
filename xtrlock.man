@@ -2,7 +2,7 @@
 .SH NAME
 xtrlock \- Lock X display until password supplied, leaving windows visible
 .SH SYNOPSIS
-.B xtrlock
+.B A modified version of xtrlock with more functions implemented. 
 .SH DESCRIPTION
 .B xtrlock
 locks the X server till the user enters their password at the keyboard.
@@ -25,29 +25,6 @@ generate bells and are otherwise ignored until a timeout has expired.
 The X server screen saver continues to operate normally; if it comes
 into operation the display may be restored by the usual means of
 touching a key (Shift, for example) or the mouse.
-.SH OPTIONS, X RESOURCES, CONFIGURATION
-None.
-.SH BUGS
-Additional input devices other than the keyboard and mouse are not
-disabled.
-
-The timeouts cannot be modifed.
-.SH SEE ALSO
-.BR X "(1), Xlib Documentation."
-.SH AUTHOR
-Ian Jackson <ian@chiark.greenend.org.uk>
-.SH COPYRIGHT
-Copyright (C) 1993, 1994 by Ian Jackson.
-
-Permission to use, copy, modify and distribute this software and its
-documentation is granted under the terms of the GNU General Public
-Licence, version 2 or later, as published by the Free Software
-Foundation.
-
-This program is distributed in the hope that it will be useful, but
-WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-General Public License for more details.
 
 This program now allows user to use their own password instead of 
 the default user password, which often is also used for other things 
@@ -76,12 +53,52 @@ option) on successful locks under normal mode. While the -b flag is passed,
 the screen will only be covered on successful locks.
 [If the worse comes to the worst, use <Ctrl>+<Alt>+<F2> and login to kill
 this program...]
- 
-Usage: 
-    -h                      show this help
-    -p [password_string]    use custom non-encrypted password
-    -e [password_hash]      use encrypted custom password with salt of itself
-    -c [password_string]    calculate the password string that can be used with the "-c" option
-    -b                      lock with a blank screen
-    -d [delay]              milliseconds the screen blinks on successful locks(0 for no-delay & 100000 for 0.1 s), default = 0.1s
-    -n                      send message notification on lock and unlock
+
+.SH OPTIONS: 
+    -h --help                                    show this help
+
+    -l --lock-user-password                      lock immediately with 
+                                                 the user's default password
+
+    -p --password           [password_string]    use custom non-encrypted 
+                                                 password
+
+    -e --encrypted-password [password_hash]      use encrypted custom password 
+                                                 with salt of itself
+
+    -c --calculate          [password_string]    calculate the password string
+                                                 that can be used with the "-c" 
+                                                 option
+
+    -b --block-screen                            lock with a blank screen
+
+    -d --delay of blink     [delay_usec]         milliseconds the screen blinks 
+                                                 on successful locks
+                                                 (0 for no-delay & 100000 for 0.1 s)
+
+    -n --notify                                  send message notification on
+                                                 lock and unlock
+
+.SH X RESOURCES, CONFIGURATION:
+None.
+.SH BUGS
+Additional input devices other than the keyboard and mouse are not
+disabled.
+
+The timeouts cannot be modifed.
+.SH SEE ALSO
+.BR X "(1), Xlib Documentation."
+.SH AUTHOR
+Ian Jackson <ian@chiark.greenend.org.uk>
+.SH COPYRIGHT
+Copyright (C) 1993, 1994 by Ian Jackson.
+
+Permission to use, copy, modify and distribute this software and its
+documentation is granted under the terms of the GNU General Public
+Licence, version 2 or later, as published by the Free Software
+Foundation.
+
+This program is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
