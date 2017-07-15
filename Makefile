@@ -39,7 +39,7 @@ install:	xtrlock
 		$(INSTALL) -c -m 644 unlock.png $(CONFIGPATH)
 
 install.man:
-		$(INSTALL) -c -m 644 xtrlock.man /usr/man/man1/xtrlock.1x
+		$(INSTALL) -c -m 644 xtrlock.man /usr/share/man/man1/xtrlock.1x
 
 remove:
 		$(RM) /usr/bin/xtrlock
