@@ -28,7 +28,7 @@ Debian series: `sudo apt-get install libnotify-dev libx11-dev build-essential cm
 Redhat series: `sudo yum install libnotify-dev libx11-dev build-essential cmake cmake-data pkg-config`
 2. Download the correct version of source code you want and unzip it.(Probably from releases if stability is required)
 3. `cd Better-XTrLock`
-4. `make && sudo make install && sudo make install.man`
+4. `make && sudo make install && sudo make install.man && sudo make install.bash_completion`
 5. `xtrlock -h` to view usage
 
 #### Removal Guide:
