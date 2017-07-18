@@ -41,7 +41,7 @@ install:	xtrlock
 install.man:
 		$(INSTALL) -c -m 644 xtrlock.man /usr/share/man/man1/xtrlock.1x
 
-install.auto-complete:
+install.bash_completion:
 		$(INSTALL) -c -m 754 xtrlock-completion.sh /usr/share/bash-completion/completions/xtrlock
 remove:
 		$(RM) /usr/bin/xtrlock
