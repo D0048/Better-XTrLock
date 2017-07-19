@@ -24,12 +24,15 @@ d0048
 #### Installation Guide:
 ##### On linux:
 1. Install required libiary and tools to build the project:
-Debian series: `sudo apt-get install libnotify-dev libx11-dev build-essential cmake cmake-data pkg-config`
-Redhat series: `sudo yum install libnotify-dev libx11-dev build-essential cmake cmake-data pkg-config`
+Debian series: `sudo apt-get install bash-completion libnotify-dev libx11-dev build-essential cmake cmake-data pkg-config`
+Redhat series: `sudo dnf install bash-completion libnotify-dev libx11-dev build-essential cmake cmake-data pkg-config`
 2. Download the correct version of source code you want and unzip it.(Probably from releases if stability is required)
 3. `cd Better-XTrLock`
-4. `make && sudo make install && sudo make install.man && sudo make install.bash_completion`
-5. `xtrlock -h` to view usage
+4. `make && sudo make install` to install the main binaries.
+5. To install the manual for xtrlock, `sudo make install.man`. Then use `man xtrlock` to read the manual.
+6. To install the auto completion support for bash 'sudo make install.bash_completion`
+7. To trigger xtrlock on lid close, `sudo make install.on_lid LID_CMD='lock_command_with_args'`.(e.g: `LID_CMD='xtrlock -l -n'`). If no command specified, `xtrlock -l` will be used.
+8. `xtrlock -h` to view usage
 
 #### Removal Guide:
 ##### On linux:
