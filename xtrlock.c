@@ -378,6 +378,7 @@ loop_x:   /*loop exit*/
 int main(int argc, char** argv)
 { /*TODO: Add keeper process*/
         /*TODO: On lid close*/
+        /*TODO: Record failed trails*/
         errno = 0;
         bool need_lock = false;
         cust_pw_setting.enable = false;
