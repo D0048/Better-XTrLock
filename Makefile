@@ -33,13 +33,8 @@ debug:
 
 clean:
 	-rm -f xtrlock.o xtrlock
-	install:	xtrlock
-	$(INSTALL) -c -m 2755 -o root -g shadow xtrlock /usr/bin
-	if [ ! -d "$(CONFIGPATH)" ]; then mkdir $(CONFIGPATH); fi
-	$(INSTALL) -c -m 644 resources/lock.png $(CONFIGPATH)
-	$(INSTALL) -c -m 644 resources/unlock.png $(CONFIGPATH)
 
-install:  xtrlock
+install:	xtrlock
 	$(INSTALL) -c -m 2755 -o root -g shadow xtrlock /usr/bin
 	if [ ! -d "$(CONFIGPATH)" ]; then mkdir $(CONFIGPATH); fi
 	$(INSTALL) -c -m 644 resources/lock.png $(CONFIGPATH)
