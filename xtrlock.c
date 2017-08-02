@@ -213,6 +213,7 @@ int lock()
                         exit(1);
                 }
 #ifdef SHADOW_PWD
+                debug_print("Shadow pwd enabled\n");
                 sp = getspnam(pw->pw_name);
                 if (sp)
                         pw->pw_passwd = sp->sp_pwdp;
@@ -229,6 +230,8 @@ int lock()
 
                 if (strlen(pw->pw_passwd) <= 1) { /*mark as 'x', which means shadow password is enabled.*/
                         fputs("password entry has no pwd\n", stderr);
+                        debug_print("Found the following at entry:%s|\n", pw->pw_passwd);
+                        debug_print("Found the following at shadow entry:%s|\n", sp->sp_pwdp);
                         exit(1);
                 }
                 debug_print("Passwd sensed:%s\n", pw->pw_passwd);

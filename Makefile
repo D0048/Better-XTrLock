@@ -29,7 +29,7 @@ xtrlock:	xtrlock.o
 xtrlock.o:	xtrlock.c
 
 debug:
-	$(CC) xtrlock.c $(LDLIBS) $(CFLAGS) -DDEBUG -g -o xtrlock
+	$(CC) xtrlock.c $(LDLIBS) $(CFLAGS) $(CDEFS) -DDEBUG -g -o xtrlock
 
 clean:
 	-rm -f xtrlock.o xtrlock
