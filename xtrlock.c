@@ -42,6 +42,9 @@
 #include <libnotify/notify.h>
 #include <gdk-pixbuf/gdk-pixbuf.h>
 
+#include "resources/lock.xbm"
+//#include "resources/lock_origin.h"
+
 #ifdef SHADOW_PWD
 #include <shadow.h>
 #endif
@@ -188,10 +191,13 @@ int lock()
         long goodwill = INITIALGOODWILL, timeout = 0;
         XSetWindowAttributes attrib;
         Cursor cursor;
+        //Pixmap pmcsr;
+        //XColor xc_fg, xc_bg, dummy;
         Pixmap csr;
         XColor xcolor;
         int ret;
-        static char csr_bits[] = { 0x00 };
+        //static char *csr_bits = lock_bits;
+        static char csr_bits[]= {0x00};
         struct timeval tv;
         int tvt, gs;
 
@@ -250,11 +256,35 @@ int lock()
         window = trans_window;
 
         XSelectInput(display, window, KeyPressMask | KeyReleaseMask);
+        /*
+           if(!XAllocNamedColor(display,
+           DefaultColormap(display, DefaultScreen(display)),
+           "black",
+           &dummy, &xc_fg)
+           ){fprintf(stderr, "Failed to allocate foreground color!\n");}
 
+           if(!XAllocNamedColor(display,
+           DefaultColormap(display, DefaultScreen(display)),
+           "steelblue3",
+           &dummy, &xc_bg)
+           && !XAllocNamedColor(display,
+           DefaultColormap(display, DefaultScreen(display)),
+           "black",
+           &dummy, &xc_bg)
+           && !XAllocNamedColor(display,
+           DefaultColormap(display, DefaultScreen(display)),
+           "white",
+           &dummy, &xc_bg)
+           ){fprintf(stderr, "Failed to allocate background color!\n");}
+
+           pmcsr = XCreateBitmapFromData(display, window, csr_bits, lock_width, lock_height);
+
+           cursor = XCreatePixmapCursor(display, pmcsr, pmcsr, &xc_fg, &xc_bg, lock_x_hot, lock_y_hot);
+           cursor = XCreatePixmapCursor(display, pmcsr, pmcsr, &xc_fg, &xc_bg, 0, 0);
+           */
         csr = XCreateBitmapFromData(display, window, csr_bits, 1, 1);
 
         cursor = XCreatePixmapCursor(display, csr, csr, &xcolor, &xcolor, 1, 1);
-
         XMapWindow(display, window);
 
         /*Sometimes the WM doesn't ungrab the keyboard quickly enough if
@@ -377,8 +407,8 @@ loop_x:   /*loop exit*/
 
 int main(int argc, char** argv)
 { /*TODO: Add keeper process*/
-        /*TODO: On lid close*/
         /*TODO: Record failed trails*/
+        /*TODO: add deb/rpm packages*/
         errno = 0;
         bool need_lock = false;
         cust_pw_setting.enable = false;
