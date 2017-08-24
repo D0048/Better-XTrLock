@@ -182,6 +182,10 @@ int notify_lock(bool lock){/*0 for unlock, 1 for lock. Function relies on notify
         return 0;
 }
 
+void onfail(){
+
+}
+
 int lock()
 {
         XEvent ev;
@@ -370,8 +374,12 @@ int lock()
                                                         break;
                                                 else
                                                         rbuf[rlen] = 0;
-                                                if (passwordok(rbuf))
+                                                if (passwordok(rbuf)){
                                                         goto loop_x;
+                                                }
+                                                else{
+                                                        onfail();
+                                                }
                                                 XBell(display, 0);
                                                 rlen = 0;
                                                 if (timeout) {
