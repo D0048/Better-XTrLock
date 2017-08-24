@@ -91,6 +91,10 @@ training_file = open("./train_t.data", 'r')
 training_datas = training_file.readlines()
 training_file.close()
 
+sample_file = open("./sample.data", 'r')
+sample_datas = sample_file.readlines()
+sample_file.close()
+
 # number of input, hidden and output nodes
 input_nodes = training_datas[0].count(" ")
 hidden_nodes = 9
@@ -112,4 +116,10 @@ for data in training_datas:
     pass
 print("correct samples trained")
 
-print(n.query([0.000215,0.000073,0.000059,0.000081,0.000095,0.000047,0.000060,0.000072,0.000066,0.000091,0.000091]))
+for data in sample_datas:
+    data = [float(i) for i in data.split(" ")[:-1]]
+    print("validating with: ")
+    print(data)
+    n.query(data)
+    pass
+print("correct samples trained")
