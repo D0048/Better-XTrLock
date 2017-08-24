@@ -127,6 +127,5 @@ for data in sample_datas:
     else:
         print("wrong!")
     print (result)
-    
     pass
 print("test samples applied")
