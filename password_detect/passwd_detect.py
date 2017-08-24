@@ -109,17 +109,24 @@ learning_rate = 0.3
 n = neuralNetwork(input_nodes, hidden_nodes, output_nodes, learning_rate)
 
 for data in training_datas:
-    data = [float(i) for i in data.split(" ")[:-1]]
+    data = [float(i)*1000 for i in data.split(" ")[:-1]]
     print("training with: ")
     print(data)
     n.train(data, [0.99,0.01])
     pass
-print("correct samples trained")
+print("correct samples trained\n")
 
 for data in sample_datas:
-    data = [float(i) for i in data.split(" ")[:-1]]
+    data = [float(i)*1000 for i in data.split(" ")[:-1]]
     print("validating with: ")
     print(data)
-    n.query(data)
+    result=n.query(data)
+    if(result[0]>result[1]):
+        print("correct!")
+        pass
+    else:
+        print("wrong!")
+    print (result)
+    
     pass
-print("correct samples trained")
+print("test samples applied")
