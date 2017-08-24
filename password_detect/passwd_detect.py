@@ -92,7 +92,7 @@ training_datas = training_file.readlines()
 training_file.close()
 
 # number of input, hidden and output nodes
-input_nodes = training_datas[0].count(" ") + 1
+input_nodes = training_datas[0].count(" ")
 hidden_nodes = 9
 output_nodes = 2
 print("Node details:" + str(input_nodes) + "|" + str(hidden_nodes) + "|" +
@@ -105,9 +105,11 @@ learning_rate = 0.3
 n = neuralNetwork(input_nodes, hidden_nodes, output_nodes, learning_rate)
 
 for data in training_datas:
-    data = [int(i) for i in data.split(" ")]
+    data = [float(i) for i in data.split(" ")[:-1]]
     print("training with: ")
     print(data)
     n.train(data, [0.99,0.01])
     pass
 print("correct samples trained")
+
+print(n.query([0.000215,0.000073,0.000059,0.000081,0.000095,0.000047,0.000060,0.000072,0.000066,0.000091,0.000091]))
