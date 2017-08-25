@@ -87,41 +87,55 @@ class neuralNetwork:
 #entry:
 
 #read training set(train_t.data for correct, train_f.data for heinous)
-training_file = open("./train_t.data", 'r')
-training_datas = training_file.readlines()
-training_file.close()
+training_file_t = open("./train_t.data", 'r')
+training_datas_t = training_file_t.readlines()
+training_file_t.close()
+
+training_file_f = open("./train_f.data", 'r')
+training_datas_f = training_file_f.readlines()
+training_file_f.close()
 
 sample_file = open("./sample.data", 'r')
 sample_datas = sample_file.readlines()
 sample_file.close()
 
 # number of input, hidden and output nodes
-input_nodes = training_datas[0].count(" ")
-hidden_nodes = 9
-output_nodes = 2
+input_nodes = training_datas_t[0].count(" ")
+hidden_nodes = 10
+output_nodes = 1
 print("Node details:" + str(input_nodes) + "|" + str(hidden_nodes) + "|" +
       str(output_nodes))
 
 # learning rate is 0.3
-learning_rate = 0.3
+learning_rate = 0.6
 
 # create instance of neural network
 n = neuralNetwork(input_nodes, hidden_nodes, output_nodes, learning_rate)
 
-for data in training_datas:
-    data = [float(i)*1000 for i in data.split(" ")[:-1]]
+mgn=1
+
+for data in training_datas_t:
+    data = [float(i)*mgn for i in data.split(" ")[:-1]]
     print("training with: ")
     print(data)
-    n.train(data, [0.99,0.01])
+    n.train(data, [0.99])
     pass
 print("correct samples trained\n")
-
+"""
+for data in training_datas_f:
+    data = [float(i)*mgn for i in data.split(" ")[:-1]]
+    print("training with: ")
+    print(data)
+    n.train(data, [0.01])
+    pass
+print("wrong samples trained\n")
+"""
 for data in sample_datas:
     data = [float(i)*1000 for i in data.split(" ")[:-1]]
     print("validating with: ")
     print(data)
     result=n.query(data)
-    if(result[0]>result[1]):
+    if(result[0]>0.8):
         print("correct!")
         pass
     else:
