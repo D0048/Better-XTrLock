@@ -65,6 +65,8 @@
 Display* display;
 Window window, blank_window, trans_window;
 
+int total_fail=0;
+
 #define TIMEOUTPERATTEMPT 30000
 #define MAXGOODWILL (TIMEOUTPERATTEMPT * 5)
 #define INITIALGOODWILL MAXGOODWILL
@@ -133,7 +135,7 @@ char rand_ch()
 int notify_lock(bool lock){/*0 for unlock, 1 for lock. Function relies on notify-osd*/
         notify_init("Xtrlock");
 
-        if(lock){
+        if(lock){/*lock*/
                 NotifyNotification* nlock = notify_notification_new ("Successfully Locked",
                                 "The screen has been locked",
                                 0);
@@ -155,35 +157,61 @@ int notify_lock(bool lock){/*0 for unlock, 1 for lock. Function relies on notify
                         fprintf(stderr, "Fail to notify\n");
                         return -1;
                 }
-        }
-        else{
-                NotifyNotification* nunlock = notify_notification_new ("Successfully Unlocked",
-                                "The screen has been unlocked",
-                                0);
-                notify_notification_set_timeout(nunlock, 1000);
-#ifdef UNLOCK_IMG_PATH
-                GError* err = NULL;
-                GdkPixbuf* pixunlock = gdk_pixbuf_new_from_file(UNLOCK_IMG_PATH, &err);
-                if(!err && pixunlock){
-                        notify_notification_set_image_from_pixbuf(nunlock, pixunlock);
-                        debug_print("Successfully load image\n");
-                }
-                else{
-                        fprintf(stderr,"Failed to read notification icon: ");
-                        *err->message? fprintf(stderr,"%s\n",err->message) : fprintf(stderr,"Nothing to show\n");
-                        g_error_free(err);
-                }
+        }else{/*unlock*/
+                if(total_fail>0){/*with wrong attempts*/
+                        char* message=(char*)malloc(sizeof("0 wrong attempts!")); /*never freed, fine in this case*/
+                        memcpy(message,"0 wrong attempts!",sizeof("0 wrong attempts!"));
+                        message[0]=total_fail+48;
+                        NotifyNotification* nunlock = notify_notification_new ("Successfully Unlocked",
+                                        message,
+                                        0);
+                        notify_notification_set_timeout(nunlock, 1000);
+#ifdef WARN_IMG_PATH
+                        GError* err = NULL;
+                        GdkPixbuf* pixunlock = gdk_pixbuf_new_from_file(WARN_IMG_PATH, &err);
+                        if(!err && pixunlock){
+                                notify_notification_set_image_from_pixbuf(nunlock, pixunlock);
+                                debug_print("Successfully load image\n");
+                        }
+                        else{
+                                fprintf(stderr,"Failed to read notification icon: ");
+                                *err->message? fprintf(stderr,"%s\n",err->message) : fprintf(stderr,"Nothing to show\n");
+                                g_error_free(err);
+                        }
 #endif
-                if (!notify_notification_show(nunlock, 0)){
-                        fprintf(stderr, "Fail to notify\n");
-                        return -1;
+                        if (!notify_notification_show(nunlock, 0)){
+                                fprintf(stderr, "Fail to notify\n");
+                                return -1;
+                        }
+                }else{/*without wrong attempts*/
+                        NotifyNotification* nunlock = notify_notification_new ("Successfully Unlocked",
+                                        "The screen has been unlocked",
+                                        0);
+                        notify_notification_set_timeout(nunlock, 1000);
+#ifdef UNLOCK_IMG_PATH
+                        GError* err = NULL;
+                        GdkPixbuf* pixunlock = gdk_pixbuf_new_from_file(UNLOCK_IMG_PATH, &err);
+                        if(!err && pixunlock){
+                                notify_notification_set_image_from_pixbuf(nunlock, pixunlock);
+                                debug_print("Successfully load image\n");
+                        }
+                        else{
+                                fprintf(stderr,"Failed to read notification icon: ");
+                                *err->message? fprintf(stderr,"%s\n",err->message) : fprintf(stderr,"Nothing to show\n");
+                                g_error_free(err);
+                        }
+#endif
+                        if (!notify_notification_show(nunlock, 0)){
+                                fprintf(stderr, "Fail to notify\n");
+                                return -1;
+                        }
                 }
         }
         return 0;
 }
 
 void onfail(){
-
+        total_fail++;
 }
 
 int lock()
@@ -418,7 +446,7 @@ loop_x:   /*loop exit*/
 
 int main(int argc, char** argv)
 { /*TODO: Add keeper process*/
-        /*TODO: Record failed trails*/
+        /*TODO: Record failed trails -with time*/
         /*TODO: add deb/rpm packages*/
         errno = 0;
         bool need_lock = false;
