@@ -159,9 +159,11 @@ int notify_lock(bool lock){/*0 for unlock, 1 for lock. Function relies on notify
                 }
         }else{/*unlock*/
                 if(total_fail>0){/*with wrong attempts*/
-                        char* message=(char*)malloc(sizeof("0 wrong attempts!")); /*never freed, fine in this case*/
-                        memcpy(message,"0 wrong attempts!",sizeof("0 wrong attempts!"));
-                        message[0]=total_fail+48;
+                        char* tail = " failed attempts";
+                        char* message = malloc(sizeof(char)*2+sizeof(tail));/*never freed, fine in this case*/
+                        snprintf(message, sizeof(char)*2, "%d", total_fail);
+                        strcat(message, tail);
+
                         NotifyNotification* nunlock = notify_notification_new ("Successfully Unlocked",
                                         message,
                                         0);
