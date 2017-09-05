@@ -68,7 +68,7 @@ def create_default(path):
     config.set(section="Setting", option="Pwd", value='112233')
     config.set(section="Setting", option="SizeH", value='1000')
     config.set(section="Setting", option="SizeW", value='1000')
-    config.write(open(path, 'w+', encoding='utf_8'))
+    config.write(open(path, 'w+', encoding='utf_8_sig'))
     pass
 
 
@@ -123,7 +123,7 @@ def main():
     try:
         print("Reading config file from: "+config_file)
         cp = configparser.ConfigParser()
-        cp.read_file(config_file)
+        cp.read(config_file, encoding="utf-8-sig")
     except Exception as e:
         print(
             "Failed to read config file, config backed up at .bak, now creating default: "
