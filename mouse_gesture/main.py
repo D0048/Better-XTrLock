@@ -34,11 +34,6 @@ block9 = Block()
 block_total = Block()
 '''
 
-blocks = [
-    #block0, block1, block3, block4, block5, block6, block7, block8, block9,
-    #block_total
-]
-
 
 class Block:
     x1 = 0
@@ -56,7 +51,7 @@ class Block:
         pass
 
     def check(self, x, y):
-        if (x >= x1 and x >= x2 and y >= y1 and y <= y2):
+        if (x >= self.x1 and x <= self.x2 and y >= self.y1 and y <= self.y2):
             return True
         else:
             return False
@@ -65,6 +60,13 @@ class Block:
     def info(self):
         return "Area:({}, {}) to ({}, {}) with value {}".format(
             self.x1, self.y1, self.x2, self.y2, self.value)
+
+
+blocks = [
+    #block0, block1, block3, block4, block5, block6, block7, block8, block9,
+    #block_total
+]
+block_total = Block()
 
 
 def on_press(key):
@@ -92,8 +94,17 @@ def on_move(x, y):
     #ohash = hashlib.md5((str(x) + str(y)).encode('utf-8')).hexdigest()
     #print(str(ohash))
     global lock_mx, lock_my
+    global blocks, block_total
     lock_mx = x
     lock_my = y
+    if block_total.check(x, y):
+        for b in blocks:
+            if b.check(x, y) and b.value != "nah":
+                print(b.value)
+                pass
+            pass
+        pass
+
     pass
 
 
@@ -245,7 +256,7 @@ def update_conf(path, cp):
     pass
 
 
-def update_blocks(x1, y1, x2, y2, section_w=3, section_h=3, gap=20):
+def update_blocks(x1, y1, x2, y2, section_w=3, section_h=3, gap_rate=0.1):
     global trigger
     global isGen
     global mouse_x
@@ -255,34 +266,44 @@ def update_blocks(x1, y1, x2, y2, section_w=3, section_h=3, gap=20):
     #regularize x1->x2, y1->y2: 0->100, 0->100 x=l2r,y=u2d
     if (x1 > x2):
         x1, x2 = x2, x1
-        print("Auto formated location x")
+        print("Auto flipped location x")
         pass
     if (y1 > y2):
         y1, y2 = y2, y1
-        print("Auto formated location y")
+        print("Auto flipped location y")
         pass
 
     #find label
+    global block_total
     block_total = Block(x1, y1, x2, y2)
-    blocks.append(block_total)
     print(block_total.info())
 
-    block_w = int((x1 - x2 - (gap * (section_w - 1))) / (section_w))#TODO:here are two wrong but identical value??
-    block_h = int((x1 - x2 - (gap * (section_h - 1))) / (section_h))
-    print("W per block: {}, H per block: {}".format(block_w, block_h))
+    gapx = abs(x2 - x1) * gap_rate
+    gapy = abs(y2 - y1) * gap_rate
 
-    block_value = 0
-    buf_x1, buf_y1, buf_x2, buf_y2 = x1, y1, x1 + block_w, y1 - block_h
+    block_w = int((abs(x2 - x1) - (gapx * (section_w - 1))) /
+                  (section_w))  #TODO:super huge +/- value
+    block_h = int((abs(y2 - y1) - (gapy * (section_h - 1))) / (section_h))
+
+    print("W per block: {} with gap {}, H per block: {} with gap {}".format(
+        gapx, block_w, block_h, gapy))
+
+    block_value = 1
+    buf_x1, buf_y1, buf_x2, buf_y2 = x1, y1, x1 + block_w, y1 + block_h
+
     for ih in range(0, section_h):
         for iw in range(0, section_w):
             block = Block(buf_x1, buf_y1, buf_x2, buf_y2, block_value)
-            blocks.insert(0, block)
+            blocks.append(block)  #add at first
             print(block.info())
             block_value += 1
-            buf_x1 += gap + block_w  #->1
+            buf_x1 += gapx + block_w  #x1->1
+            buf_x2 += gapx + block_w  #x2->1
             pass
-        buf_y1 += 0 - gap - block_h  #br
+        buf_y1 += 0 + gapy + block_h  #br
+        buf_y2 += 0 + gapy + block_h  #br
         buf_x1 = x1
+        buf_x2 = x1 + block_w
         pass
 
     #TODO: cal blocks and set to global
