@@ -7,7 +7,6 @@ import hashlib
 import argparse
 import configparser
 
-global trigger
 global isGen
 global mouse_x
 global lock_mx
@@ -16,23 +15,15 @@ global lock_my
 global blocks
 mouse_x = 1
 mouse_y = 1
-triggered = False
+pwd_len = 6
+pwd_chrs = "112233"
+pwd_hsh = "nah"
+do_output = False
+
+lock = Lock()
 
 #lock_mx = Lock()
 #counter = Value('i', 0) # int type，相当于java里面的原子变量
-'''
-block0 = Block()
-block1 = Block()
-block2 = Block()
-block3 = Block()
-block4 = Block()
-block5 = Block()
-block6 = Block()
-block7 = Block()
-block8 = Block()
-block9 = Block()
-block_total = Block()
-'''
 
 
 class Block:
@@ -47,7 +38,7 @@ class Block:
         self.x2 = x2
         self.y1 = y1
         self.y2 = y2
-        self.value = value
+        self.value = str(value)
         pass
 
     def check(self, x, y):
@@ -71,40 +62,40 @@ block_total = Block()
 
 def on_press(key):
     print('{0} pressed'.format(key))
-    global triggered
-
-    if (str(key).startswith(trigger)):
-        print("triggered")
-        triggered = True
-        pass
     pass
 
 
 def on_release(key):
     #print('{0} release'.format(key))
-    global triggered
-    if (str(key).startswith(trigger)):
-        print("detriggered")
-        triggered = False
-        pass
+    pass
 
 
 def on_move(x, y):
-    print('Pointer moved to {0}'.format((x, y)))
+    global do_output, pwd_hsh, pwd_len, pwd_chrs
+    if do_output: print('Pointer moved to {0}'.format((x, y)))
     #ohash = hashlib.md5((str(x) + str(y)).encode('utf-8')).hexdigest()
     #print(str(ohash))
     global lock_mx, lock_my
-    global blocks, block_total
+    global blocks, block_total, lock
     lock_mx = x
     lock_my = y
-    if block_total.check(x, y):
-        for b in blocks:
-            if b.check(x, y) and b.value != "nah":
-                print(b.value)
+    with lock:
+        if block_total.check(x, y):
+            for b in blocks:
+                if b.check(x,
+                           y) and b.value != "nah" and b.value != pwd_chrs[-1]:
+                    print(b.value + ":" + pwd_chrs[-1] + ":" + pwd_chrs)
+                    if do_output: print(b.value)
+                    if len(pwd_chrs) < pwd_len:  #len<
+                        pwd_chrs += b.value
+                        pass
+                    else:  #len=>
+                        pwd_chrs = pwd_chrs[1:] + b.value
+                        pass
+                    print(pwd_chrs)
+                    pass
                 pass
             pass
-        pass
-
     pass
 
 
@@ -135,7 +126,7 @@ def create_default(path):
     print("Pharsing default and writing to " + path)
     config = configparser.ConfigParser()
     config.add_section(section="Setting")
-    config.set(section="Setting", option="Trigger", value='a')
+    config.set(section="Setting", option="PwdLen", value='6')
     config.set(section="Setting", option="Pwd", value='112233')
     config.set(section="Setting", option="SizeX1", value='1000')
     config.set(section="Setting", option="SizeY1", value='1000')
@@ -146,7 +137,6 @@ def create_default(path):
 
 
 def main():  #TODO:record, hash, display
-    global trigger
     global isGen
     global mouse_x
     global lock_mx
@@ -154,14 +144,6 @@ def main():  #TODO:record, hash, display
     global lock_my
     global blocks
     parser = argparse.ArgumentParser(description='xtrlock')
-    parser.add_argument(
-        '-t',
-        '--trigger',
-        action='store',
-        type=str,
-        dest="trigger",
-        help="trigger key of the action",
-        default="a")
     parser.add_argument(
         '-g',
         '--gen',
@@ -180,11 +162,6 @@ def main():  #TODO:record, hash, display
         default="xtrlock.conf")
 
     args = parser.parse_args()
-
-    print(args.trigger)  #is trigger?
-    global trigger
-    trigger = '\'' + args.trigger
-    print("Trigger:" + trigger)
 
     print(args.gen)  #do record?
     global isGen
@@ -232,17 +209,12 @@ def main():  #TODO:record, hash, display
 
 
 def update_conf(path, cp):
-    #trigger
-    new_trigger = input("SizeH(" + cp.get("Setting", "Trigger", raw=True) +
-                        "):")
-    print(str(new_trigger))
-    if (new_trigger != ''): cp.set("Setting", "Trigger", new_trigger[0])
-
     #SizeX1/Y1
     input("SizeX1/Y1(enter to set current mouse position as the first point)")
     x1 = lock_mx
     y1 = lock_my
     print("Point 1 Set to:" + str(x1) + ', ' + str(y1))
+
     #SizeX2/Y2
     input("SizeX2/Y2(enter to set current mouse position as the second point)")
     x2 = lock_mx
@@ -253,6 +225,21 @@ def update_conf(path, cp):
     cp.set("Setting", "SizeY1", str(y1))
     cp.set("Setting", "SizeY2", str(y2))
     update_blocks(x1, y1, x2, y2)
+
+    #pwd
+    global pwd_len, pwd_chrs, pwd_hsh, do_output
+    len = input("enter the length of the pattern(e.g: 5 for 12345)(" + cp.get(
+        "Setting", "PwdLen") + "):")
+    if len != '':
+        cp.set("PwdLen", int(len))
+        pwd_len = int(len)
+        pass
+    else:
+        pwd_len = cp.getint("Setting", "PwdLen")
+
+    pwd_chrs = input(
+        "use the mouse to create the pattern in the area set(e.g: 5 for 12345)("
+        + cp.get("Setting", "PwdLen") + "):")
     pass
 
 
@@ -281,8 +268,7 @@ def update_blocks(x1, y1, x2, y2, section_w=3, section_h=3, gap_rate=0.1):
     gapx = abs(x2 - x1) * gap_rate
     gapy = abs(y2 - y1) * gap_rate
 
-    block_w = int((abs(x2 - x1) - (gapx * (section_w - 1))) /
-                  (section_w))  #TODO:super huge +/- value
+    block_w = int((abs(x2 - x1) - (gapx * (section_w - 1))) / (section_w))
     block_h = int((abs(y2 - y1) - (gapy * (section_h - 1))) / (section_h))
 
     print("W per block: {} with gap {}, H per block: {} with gap {}".format(
