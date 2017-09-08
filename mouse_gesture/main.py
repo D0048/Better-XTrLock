@@ -16,7 +16,7 @@ global blocks
 mouse_x = 1
 mouse_y = 1
 pwd_len = 6
-pwd_chrs = "112233"
+pwd_chrs = "---"
 pwd_hsh = "nah"
 do_output = False
 
@@ -72,7 +72,7 @@ def on_release(key):
 
 def on_move(x, y):
     global do_output, pwd_hsh, pwd_len, pwd_chrs
-    if do_output: print('Pointer moved to {0}'.format((x, y)))
+    #if do_output: print('Pointer moved to {0}'.format((x, y)))
     #ohash = hashlib.md5((str(x) + str(y)).encode('utf-8')).hexdigest()
     #print(str(ohash))
     global lock_mx, lock_my
@@ -84,15 +84,15 @@ def on_move(x, y):
             for b in blocks:
                 if b.check(x,
                            y) and b.value != "nah" and b.value != pwd_chrs[-1]:
-                    print(b.value + ":" + pwd_chrs[-1] + ":" + pwd_chrs)
-                    if do_output: print(b.value)
+                    #if do_output:
+                    #    print(b.value + ":" + pwd_chrs[-1] + ":" + pwd_chrs)
                     if len(pwd_chrs) < pwd_len:  #len<
                         pwd_chrs += b.value
                         pass
                     else:  #len=>
                         pwd_chrs = pwd_chrs[1:] + b.value
                         pass
-                    print(pwd_chrs)
+                    if do_output: print(b.value + ":" + pwd_chrs)
                     pass
                 pass
             pass
@@ -127,7 +127,7 @@ def create_default(path):
     config = configparser.ConfigParser()
     config.add_section(section="Setting")
     config.set(section="Setting", option="PwdLen", value='6')
-    config.set(section="Setting", option="Pwd", value='112233')
+    config.set(section="Setting", option="Pwd", value='1')
     config.set(section="Setting", option="SizeX1", value='1000')
     config.set(section="Setting", option="SizeY1", value='1000')
     config.set(section="Setting", option="SizeX2", value='1000')
@@ -220,10 +220,10 @@ def update_conf(path, cp):
     x2 = lock_mx
     y2 = lock_my
     print("Point 2 Set to:" + str(x2) + ', ' + str(y2))
-    cp.set("Setting", "SizeX1", str(x1))
-    cp.set("Setting", "SizeX2", str(x2))
-    cp.set("Setting", "SizeY1", str(y1))
-    cp.set("Setting", "SizeY2", str(y2))
+    cp.set(section="Setting", option="SizeX1", value=str(x1))
+    cp.set(section="Setting", option="SizeX2", value=str(x2))
+    cp.set(section="Setting", option="SizeY1", value=str(y1))
+    cp.set(section="Setting", option="SizeY2", value=str(y2))
     update_blocks(x1, y1, x2, y2)
 
     #pwd
@@ -231,15 +231,35 @@ def update_conf(path, cp):
     len = input("enter the length of the pattern(e.g: 5 for 12345)(" + cp.get(
         "Setting", "PwdLen") + "):")
     if len != '':
-        cp.set("PwdLen", int(len))
+        cp.set(section="Setting", option="PwdLen", value=len)
         pwd_len = int(len)
         pass
     else:
         pwd_len = cp.getint("Setting", "PwdLen")
+        pass
 
-    pwd_chrs = input(
-        "use the mouse to create the pattern in the area set(e.g: 5 for 12345)("
-        + cp.get("Setting", "PwdLen") + "):")
+    #new_pwd_chrs=""
+    while True:
+        pwd_chrs = ""
+        for i in range(0, pwd_len):
+            pwd_chrs += ("-")
+        do_output = True
+        input(
+            "use the mouse to create the pattern in the area set and press enter to confirm):"
+        )
+        if pwd_chrs.__len__() == pwd_len:
+            new_pwd_chrs = pwd_chrs
+            print("pwd set at {}".format(pwd_chrs))
+            break
+        else:
+            print("pwd not long enough: {}/{}".format(pwd_chrs.__len__(),
+                                                      pwd_len))
+        pass
+
+    pwd_hsh = hash(pwd_chrs)
+    pring("New password {} set with hashed value {}".format(pwd_chrs, pwd_hsh))
+    cp.set(section="Setting", option="PwdLen", value=pwd_hsh)
+
     pass
 
 
@@ -291,10 +311,11 @@ def update_blocks(x1, y1, x2, y2, section_w=3, section_h=3, gap_rate=0.1):
         buf_x1 = x1
         buf_x2 = x1 + block_w
         pass
-
-    #TODO: cal blocks and set to global
-
     pass
+
+
+def hash(string):#TODO:error: Unicode-objects must be encoded before hashing
+    return hashlib.md5(string).encode('utf-8').hexdigest()
 
 
 main()
