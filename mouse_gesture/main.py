@@ -96,6 +96,9 @@ def on_move(x, y):
                     pass
                 pass
             pass
+        if pwd_chrs.__len__() - pwd_chrs.count("-") == pwd_len and hash(
+                pwd_chrs) == pwd_hsh:
+            print("Successfully unlocked:{} / {}".format(pwd_chrs, pwd_hsh))
     pass
 
 
@@ -127,7 +130,7 @@ def create_default(path):
     config = configparser.ConfigParser()
     config.add_section(section="Setting")
     config.set(section="Setting", option="PwdLen", value='6')
-    config.set(section="Setting", option="Pwd", value='1')
+    config.set(section="Setting", option="PwdHsh", value='1')
     config.set(section="Setting", option="SizeX1", value='1000')
     config.set(section="Setting", option="SizeY1", value='1000')
     config.set(section="Setting", option="SizeX2", value='1000')
@@ -227,12 +230,12 @@ def update_conf(path, cp):
     update_blocks(x1, y1, x2, y2)
 
     #pwd
-    global pwd_len, pwd_chrs, pwd_hsh, do_output
-    len = input("enter the length of the pattern(e.g: 5 for 12345)(" + cp.get(
-        "Setting", "PwdLen") + "):")
-    if len != '':
-        cp.set(section="Setting", option="PwdLen", value=len)
-        pwd_len = int(len)
+    global pwd_len, pwd_chrs, pwd_hsh, do_output, lock
+    new_len = input("enter the length of the pattern(e.g: 5 for 12345)(" +
+                    cp.get("Setting", "PwdLen") + "):")
+    if new_len != '':
+        cp.set(section="Setting", option="PwdLen", value=new_len)
+        pwd_len = int(new_len)
         pass
     else:
         pwd_len = cp.getint("Setting", "PwdLen")
@@ -240,26 +243,38 @@ def update_conf(path, cp):
 
     #new_pwd_chrs=""
     while True:
-        pwd_chrs = ""
-        for i in range(0, pwd_len):
-            pwd_chrs += ("-")
+        wipe_pwd()
         do_output = True
         input(
             "use the mouse to create the pattern in the area set and press enter to confirm):"
         )
-        if pwd_chrs.__len__() == pwd_len:
+        if pwd_chrs.__len__() - pwd_chrs.count("-") == pwd_len:
             new_pwd_chrs = pwd_chrs
             print("pwd set at {}".format(pwd_chrs))
             break
         else:
-            print("pwd not long enough: {}/{}".format(pwd_chrs.__len__(),
-                                                      pwd_len))
+            print("pwd not long enough: {}/{}".format(
+                pwd_chrs.__len__() - pwd_chrs.count("-"), pwd_len))
         pass
 
-    pwd_hsh = hash(pwd_chrs)
-    pring("New password {} set with hashed value {}".format(pwd_chrs, pwd_hsh))
-    cp.set(section="Setting", option="PwdLen", value=pwd_hsh)
+    with lock:
+        new_hsh = hash(pwd_chrs)  #critical
+        wipe_pwd()
+        pwd_hsh = new_hsh
+        print("New password {} set with hashed value {}".format(
+            new_pwd_chrs, pwd_hsh))
+        cp.set(section="Setting", option="PwdHsh", value=pwd_hsh)
+        #wipe_pwd()
+        pass
+    pass
 
+
+def wipe_pwd():
+    global pwd_len, pwd_chrs, pwd_hsh, do_output, lock
+    pwd_chrs = ""
+    for i in range(0, pwd_len):
+        pwd_chrs += ("-")
+        pass
     pass
 
 
@@ -314,8 +329,9 @@ def update_blocks(x1, y1, x2, y2, section_w=3, section_h=3, gap_rate=0.1):
     pass
 
 
-def hash(string):#TODO:error: Unicode-objects must be encoded before hashing
-    return hashlib.md5(string).encode('utf-8').hexdigest()
+def hash(string):  #TODO:error: Unicode-objects must be encoded before hashing
+    return hashlib.md5(
+        str(string).encode("utf-8")).hexdigest()  #.encode('utf-8').hexdigest()
 
 
 main()
