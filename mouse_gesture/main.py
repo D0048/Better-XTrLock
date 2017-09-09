@@ -6,6 +6,7 @@ from multiprocessing import *
 import hashlib
 import argparse
 import configparser
+import signal
 
 global isGen
 global mouse_x
@@ -99,6 +100,7 @@ def on_move(x, y):
         if pwd_chrs.__len__() - pwd_chrs.count("-") == pwd_len and hash(
                 pwd_chrs) == pwd_hsh:
             print("Successfully unlocked:{} / {}".format(pwd_chrs, pwd_hsh))
+            os.kill(os.getpid(), signal.SIGTERM)
     pass
 
 
@@ -176,7 +178,7 @@ def main():  #TODO:record, hash, display
     config_file = args.config_file
     print(config_file)
 
-    if (isGen):
+    if (isGen):  #generate
         #kb_proc = multiprocessing.Process(target=kb_init, args=())
         #kb_proc.start()
         #ms_proc = multiprocessing.Process(target=ms_init, args=())
@@ -208,6 +210,46 @@ def main():  #TODO:record, hash, display
                 config_file + ".bak",  #backup the old broken config
                 "w+").writelines(open(config_file, "r+"))
             create_default(config_file)
+            pass
+        pass
+
+    else:  #use
+        try:
+            print("Reading config file from: " + config_file)
+            cp = configparser.ConfigParser()
+            cp.read(config_file, encoding="utf-8-sig")
+            read_conf(cp)
+            print("config_file read")
+            kb_t = threading.Thread(target=kb_init, args=())
+            #kb_t.setDaemon(True)
+            kb_t.start()
+            ms_t = threading.Thread(target=ms_init, args=())
+            #ms_t.setDaemon(True)
+            ms_t.start()
+            kb_t.join()
+        except Exception as e:
+            print("Error:" + str(e))
+            pass
+
+        pass
+
+    os.kill(os.getpid(), signal.SIGTERM)
+    pass
+
+
+def read_conf(cp):  #TODO: read conf
+    #SizeX1/Y1
+    x1 = cp.getint(section="Setting", option="SizeX1")
+    x2 = cp.getint(section="Setting", option="SizeX2")
+    y1 = cp.getint(section="Setting", option="SizeY1")
+    y2 = cp.getint(section="Setting", option="SizeY2")
+    update_blocks(x1, y1, x2, y2)
+
+    #pwd
+    global pwd_len, pwd_chrs, pwd_hsh, do_output, lock
+    pwd_hsh = cp.get(section="Setting", option="PwdHsh")
+    pwd_len = cp.getint(section="Setting", option="PwdLen")
+    do_output = True
     pass
 
 
@@ -329,9 +371,29 @@ def update_blocks(x1, y1, x2, y2, section_w=3, section_h=3, gap_rate=0.1):
     pass
 
 
-def hash(string):  #TODO:error: Unicode-objects must be encoded before hashing
+def hash(string):
     return hashlib.md5(
         str(string).encode("utf-8")).hexdigest()  #.encode('utf-8').hexdigest()
+
+
+def _async_raise(tid, exctype):
+    """raises the exception, performs cleanup if needed"""
+    tid = ctypes.c_long(tid)
+    if not inspect.isclass(exctype):
+        exctype = type(exctype)
+    res = ctypes.pythonapi.PyThreadState_SetAsyncExc(tid,
+                                                     ctypes.py_object(exctype))
+    if res == 0:
+        raise ValueError("invalid thread id")
+    elif res != 1:
+        # """if it returns a number greater than one, you're in trouble,
+        # and you should call it again with exc=NULL to revert the effect"""
+        ctypes.pythonapi.PyThreadState_SetAsyncExc(tid, None)
+        raise SystemError("PyThreadState_SetAsyncExc failed")
+
+
+def stop_thread(thread):
+    _async_raise(thread.ident, SystemExit)
 
 
 main()
