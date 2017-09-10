@@ -395,5 +395,5 @@ def _async_raise(tid, exctype):
 def stop_thread(thread):
     _async_raise(thread.ident, SystemExit)
 
-
-main()
+if __name__ == '__main__':
+    main()
