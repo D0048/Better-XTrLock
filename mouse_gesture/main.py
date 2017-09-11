@@ -439,5 +439,5 @@ def screen_lock(islock):
         pass
     pass
 
-
-main()
+if __name__ == '__main__':
+    main()
