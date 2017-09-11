@@ -7,6 +7,8 @@ import hashlib
 import argparse
 import configparser
 import signal
+import subprocess
+import logging
 
 global isGen
 global mouse_x
@@ -14,6 +16,10 @@ global lock_mx
 global mouse_y
 global lock_my
 global blocks
+global xtrlock_proc
+global xtrlock_path
+global lock
+xtrlock_path = "/usr/bin/xtrlock"
 mouse_x = 1
 mouse_y = 1
 pwd_len = 6
@@ -21,7 +27,7 @@ pwd_chrs = "---"
 pwd_hsh = "nah"
 do_output = False
 
-lock = Lock()
+lock = threading.Lock()
 
 #lock_mx = Lock()
 #counter = Value('i', 0) # int type，相当于java里面的原子变量
@@ -97,10 +103,15 @@ def on_move(x, y):
                     pass
                 pass
             pass
+        global xtrlock_proc
         if pwd_chrs.__len__() - pwd_chrs.count("-") == pwd_len and hash(
                 pwd_chrs) == pwd_hsh:
+            #******************************Correct exit*********************************#
             print("Successfully unlocked:{} / {}".format(pwd_chrs, pwd_hsh))
+            screen_lock(False)
             os.kill(os.getpid(), signal.SIGTERM)
+            pass
+        pass
     pass
 
 
@@ -137,17 +148,20 @@ def create_default(path):
     config.set(section="Setting", option="SizeY1", value='1000')
     config.set(section="Setting", option="SizeX2", value='1000')
     config.set(section="Setting", option="SizeY2", value='1000')
+    config.set(
+        section="Setting", option="Xtrlock_path", value="/usr/bin/xtrlock")
     config.write(open(path, 'w+', encoding='utf_8_sig'))
     pass
 
 
-def main():  #TODO:record, hash, display
+def main():  #TODO: display, logging
     global isGen
     global mouse_x
     global lock_mx
     global mouse_y
     global lock_my
     global blocks
+    global lock
     parser = argparse.ArgumentParser(description='xtrlock')
     parser.add_argument(
         '-g',
@@ -185,7 +199,7 @@ def main():  #TODO:record, hash, display
         #ms_proc.start()
         kb_t = threading.Thread(target=kb_init, args=())
         #kb_t.setDaemon(True)
-        kb_t.start()
+        #kb_t.start()#keyboard is unnecessary till now#
         ms_t = threading.Thread(target=ms_init, args=())
         #ms_t.setDaemon(True)
         ms_t.start()
@@ -199,6 +213,7 @@ def main():  #TODO:record, hash, display
             print("Reading config file from: " + config_file)
             cp = configparser.ConfigParser()
             cp.read(config_file, encoding="utf-8-sig")
+            read_conf(cp)
             update_conf(config_file, cp)
             cp.write(open(config_file, 'w+', encoding='utf_8_sig'))
 
@@ -226,18 +241,22 @@ def main():  #TODO:record, hash, display
             ms_t = threading.Thread(target=ms_init, args=())
             #ms_t.setDaemon(True)
             ms_t.start()
-            kb_t.join()
+            screen_lock(True)
+            xtrlock_proc.wait()
         except Exception as e:
             print("Error:" + str(e))
             pass
 
         pass
-
+    
     os.kill(os.getpid(), signal.SIGTERM)
     pass
 
 
-def read_conf(cp):  #TODO: read conf
+def read_conf(cp):
+    #xtrlock_path
+    global xtrlock_path
+    xtrlock_path = cp.get(section="Setting", option="Xtrlock_path")
     #SizeX1/Y1
     x1 = cp.getint(section="Setting", option="SizeX1")
     x2 = cp.getint(section="Setting", option="SizeX2")
@@ -254,6 +273,17 @@ def read_conf(cp):  #TODO: read conf
 
 
 def update_conf(path, cp):
+    print("Please enter the new config (enter to use the old value)")
+    #xtrlock_path
+    global xtrlock_path
+    new_path = input(
+        "enter path to your xtrlock installation(`whereis xtrlock`)({}):".
+        format(cp.get(section="Setting", option="Xtrlock_path")))
+    if new_path != '':
+        xtrlock_path = new_path
+        cp.set(section="Setting", option="Xtrlock_path", value=str(x1))
+        pass
+
     #SizeX1/Y1
     input("SizeX1/Y1(enter to set current mouse position as the first point)")
     x1 = lock_mx
@@ -394,6 +424,20 @@ def _async_raise(tid, exctype):
 
 def stop_thread(thread):
     _async_raise(thread.ident, SystemExit)
+    pass
+
+
+def screen_lock(islock):
+    global xtrlock_proc
+    if islock:
+        xtrlock_proc = subprocess.Popen(
+            args=(xtrlock_path, "-p123", "-n"), stdout=subprocess.PIPE)
+        print("Successfully locked")
+        pass
+    else:
+        xtrlock_proc.kill()
+        pass
+    pass
 
 
 main()
