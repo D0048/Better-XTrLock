@@ -65,20 +65,20 @@ block_total = Block()
 
 
 def on_press(key):
-    print('{0} pressed'.format(key))
+    #logging.debug('{0} pressed'.format(key))
     pass
 
 
 def on_release(key):
-    #print('{0} release'.format(key))
+    #logging.debug('{0} release'.format(key))
     pass
 
 
 def on_move(x, y):
     global do_output, pwd_hsh, pwd_len, pwd_chrs
-    #if do_output: print('Pointer moved to {0}'.format((x, y)))
+    #if do_output: logging.info('Pointer moved to {0}'.format((x, y)))
     #ohash = hashlib.md5((str(x) + str(y)).encode('utf-8')).hexdigest()
-    #print(str(ohash))
+    #logging.info(str(ohash))
     global lock_mx, lock_my
     global blocks, block_total, lock
     lock_mx = x
@@ -89,14 +89,14 @@ def on_move(x, y):
                 if b.check(x,
                            y) and b.value != "nah" and b.value != pwd_chrs[-1]:
                     #if do_output:
-                    #    print(b.value + ":" + pwd_chrs[-1] + ":" + pwd_chrs)
+                    #    logging.info(b.value + ":" + pwd_chrs[-1] + ":" + pwd_chrs)
                     if len(pwd_chrs) < pwd_len:  #len<
                         pwd_chrs += b.value
                         pass
                     else:  #len=>
                         pwd_chrs = pwd_chrs[1:] + b.value
                         pass
-                    if do_output: print(b.value + ":" + pwd_chrs)
+                    if do_output: logging.debug(b.value + ":" + pwd_chrs)
                     pass
                 pass
             pass
@@ -104,7 +104,8 @@ def on_move(x, y):
         if pwd_chrs.__len__() - pwd_chrs.count("-") == pwd_len and hash(
                 pwd_chrs) == pwd_hsh:
             #******************************Correct exit*********************************#
-            print("Successfully unlocked:{} / {}".format(pwd_chrs, pwd_hsh))
+            logging.info(
+                "Successfully unlocked:{} / {}".format(pwd_chrs, pwd_hsh))
             screen_lock(False)
             os.kill(os.getpid(), signal.SIGTERM)
             pass
@@ -113,14 +114,15 @@ def on_move(x, y):
 
 
 def on_click(x, y, button, pressed):
-    #print('{0} at {1}'.format('Pressed' if pressed else 'Released', (x, y)))
+    #logging.info('{0} at {1}'.format('Pressed' if pressed else 'Released', (x, y)))
     if not pressed:
         # Stop listener
         return False
 
 
 def on_scroll(x, y, dx, dy):
-    print('Scrolled {0} at {1}'.format('down' if dy < 0 else 'up', (x, y)))
+    logging.debug(
+        'Scrolled {0} at {1}'.format('down' if dy < 0 else 'up', (x, y)))
 
 
 def kb_init():
@@ -136,7 +138,7 @@ def ms_init():
 
 
 def create_default(path):
-    print("Pharsing default and writing to " + path)
+    logging.info("Pharsing default and writing to " + path)
     config = configparser.ConfigParser()
     config.add_section(section="Setting")
     config.set(section="Setting", option="PwdLen", value='6')
@@ -159,8 +161,28 @@ def main():  #TODO: display, logging
     global lock_my
     global blocks
     global lock
-    parser = argparse.ArgumentParser(description='xtrlock')
-    parser.add_argument(
+    logging.basicConfig(level=logging.INFO)  #logging init
+
+    parser = argparse.ArgumentParser(description='xtrlock')  #arg handle init
+    parser.add_argument(  #log level?
+        '-l',
+        '--log-level',
+        action='store',
+        type=int,
+        dest="log_level",
+        help=
+        "the logging level. e.g: 10 for debug, 20 for info, 30 for warning(default), 40 for error, 50 for critical.",
+        default=logging.WARN)
+    parser.add_argument(  #log file?
+        '-f',
+        '--log-file',
+        action='store',
+        type=str,
+        dest="log_file",
+        help="the file path to the log file",
+        default="nah")
+
+    parser.add_argument(  #gen?
         '-g',
         '--gen',
         action='store',
@@ -168,9 +190,9 @@ def main():  #TODO: display, logging
         dest="gen",
         help="record pwd and generate the config file",
         default=False)
-    parser.add_argument(
+    parser.add_argument(  #config file?
         '-c',
-        '--config_file',
+        '--config-file',
         action='store',
         type=str,
         dest="config_file",
@@ -179,15 +201,25 @@ def main():  #TODO: display, logging
 
     args = parser.parse_args()
 
-    print(args.gen)  #do record?
-    global isGen
-    isGen = args.gen
-    print("generate file: " + str(isGen))
+    if args.log_file == "nah":  #logging handle
+        logging.basicConfig(level=args.log_level)
+        logging.debug(
+            "Using log level {} without log file".format(args.log_level))
+        pass
+    else:
+        logging.basicConfig(filename=args.log_file, level=args.log_level)
+        logging.debug("Using log level {} to file {}".format(
+            args.log_level, args.log_file))
+        pass
 
-    print(args.config_file)  #where to record
+    global isGen  #do record?
+    isGen = args.gen
+    logging.info("Update config file? {}".format(args.gen))
+
     global config_file
     config_file = args.config_file
-    print(config_file)
+    logging.info(
+        "Using config file: {}".format(args.config_file))  #where to record
 
     if (isGen):  #generate
         #kb_proc = multiprocessing.Process(target=kb_init, args=())
@@ -202,12 +234,12 @@ def main():  #TODO: display, logging
         ms_t.start()
         if not os.access(config_file, os.R_OK) or not os.path.exists(
                 config_file) or not os.path.isfile(config_file):
-            print("config file not found, generating:")
+            logging.warn("config file not found, generating:")
             create_default(config_file)
             pass
 
         try:
-            print("Reading config file from: " + config_file)
+            logging.info("Reading config file from: " + config_file)
             cp = configparser.ConfigParser()
             cp.read(config_file, encoding="utf-8-sig")
             read_conf(cp)
@@ -215,23 +247,27 @@ def main():  #TODO: display, logging
             cp.write(open(config_file, 'w+', encoding='utf_8_sig'))
 
         except Exception as e:
-            print(
+            logging.error(
                 "Failed to read config file, config backed up at .bak, now creating default: "
                 + str(e))
             open(
                 config_file + ".bak",  #backup the old broken config
                 "w+").writelines(open(config_file, "r+"))
             create_default(config_file)
+            logging.warn(
+                "Config file with the default settings has been created "
+                "at your current directory. The old file has been backed up with .bak suffix."
+            )
             pass
         pass
 
     else:  #use
         try:
-            print("Reading config file from: " + config_file)
+            logging.debug("Reading config file from: " + config_file)
             cp = configparser.ConfigParser()
             cp.read(config_file, encoding="utf-8-sig")
             read_conf(cp)
-            print("config_file read")
+            logging.debug("config_file successfully read")
             kb_t = threading.Thread(target=kb_init, args=())
             #kb_t.setDaemon(True)
             kb_t.start()
@@ -241,7 +277,7 @@ def main():  #TODO: display, logging
             screen_lock(True)
             xtrlock_proc.wait()
         except Exception as e:
-            print("Error:" + str(e))
+            logging.critical("Error:" + str(e))
             pass
 
         pass
@@ -285,13 +321,13 @@ def update_conf(path, cp):
     input("SizeX1/Y1(enter to set current mouse position as the first point)")
     x1 = lock_mx
     y1 = lock_my
-    print("Point 1 Set to:" + str(x1) + ', ' + str(y1))
+    logging.info("Point 1 Set to:" + str(x1) + ', ' + str(y1))
 
     #SizeX2/Y2
     input("SizeX2/Y2(enter to set current mouse position as the second point)")
     x2 = lock_mx
     y2 = lock_my
-    print("Point 2 Set to:" + str(x2) + ', ' + str(y2))
+    logging.info("Point 2 Set to:" + str(x2) + ', ' + str(y2))
     cp.set(section="Setting", option="SizeX1", value=str(x1))
     cp.set(section="Setting", option="SizeX2", value=str(x2))
     cp.set(section="Setting", option="SizeY1", value=str(y1))
@@ -319,7 +355,7 @@ def update_conf(path, cp):
         )
         if pwd_chrs.__len__() - pwd_chrs.count("-") == pwd_len:
             new_pwd_chrs = pwd_chrs
-            print("pwd set at {}".format(pwd_chrs))
+            logging.debug("pwd set at {}".format(pwd_chrs))
             break
         else:
             print("pwd not long enough: {}/{}".format(
@@ -330,7 +366,7 @@ def update_conf(path, cp):
         new_hsh = hash(pwd_chrs)  #critical
         wipe_pwd()
         pwd_hsh = new_hsh
-        print("New password {} set with hashed value {}".format(
+        logging.info("New password {} set with hashed value {}".format(
             new_pwd_chrs, pwd_hsh))
         cp.set(section="Setting", option="PwdHsh", value=pwd_hsh)
         #wipe_pwd()
@@ -357,17 +393,17 @@ def update_blocks(x1, y1, x2, y2, section_w=3, section_h=3, gap_rate=0.13):
     #regularize x1->x2, y1->y2: 0->100, 0->100 x=l2r,y=u2d
     if (x1 > x2):
         x1, x2 = x2, x1
-        print("Auto flipped location x")
+        logging.warn("Auto flipped location x")
         pass
     if (y1 > y2):
         y1, y2 = y2, y1
-        print("Auto flipped location y")
+        logging.warn("Auto flipped location y")
         pass
 
     #find label
     global block_total
     block_total = Block(x1, y1, x2, y2)
-    print(block_total.info())
+    logging.info("Master block created: {}".format(block_total.info()))
 
     gapx = abs(x2 - x1) * gap_rate
     gapy = abs(y2 - y1) * gap_rate
@@ -375,8 +411,8 @@ def update_blocks(x1, y1, x2, y2, section_w=3, section_h=3, gap_rate=0.13):
     block_w = int((abs(x2 - x1) - (gapx * (section_w - 1))) / (section_w))
     block_h = int((abs(y2 - y1) - (gapy * (section_h - 1))) / (section_h))
 
-    print("W per block: {} with gap {}, H per block: {} with gap {}".format(
-        gapx, block_w, block_h, gapy))
+    logging.info("W per block: {} with gap {}, H per block: {} with gap {}".
+                 format(gapx, block_w, block_h, gapy))
 
     block_value = 1
     buf_x1, buf_y1, buf_x2, buf_y2 = x1, y1, x1 + block_w, y1 + block_h
@@ -385,7 +421,7 @@ def update_blocks(x1, y1, x2, y2, section_w=3, section_h=3, gap_rate=0.13):
         for iw in range(0, section_w):
             block = Block(buf_x1, buf_y1, buf_x2, buf_y2, block_value)
             blocks.append(block)  #add at first
-            print(block.info())
+            logging.debug(block.info())
             block_value += 1
             buf_x1 += gapx + block_w  #x1->1
             buf_x2 += gapx + block_w  #x2->1
@@ -429,7 +465,7 @@ def screen_lock(islock):
     if islock:
         xtrlock_proc = subprocess.Popen(
             args=(xtrlock_path, "-p123", "-n"), stdout=subprocess.PIPE)
-        print("Successfully locked")
+        logging.info("Successfully locked")
         pass
     else:
         xtrlock_proc.kill()
