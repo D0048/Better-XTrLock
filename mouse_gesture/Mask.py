@@ -1,9 +1,5 @@
 from Xlib import *
-
-
-def create_point():
-
-    pass
+from XtrlockGuesture import *
 
 
 class Window:
@@ -46,9 +42,10 @@ class Window:
 
 
 class ScreenMask:
-    #window = Window()
+    master_block = Block()
+    blocks = [Block()]
 
-    def __init__():
+    def __init__(self, master_block, blocks):
         pass
 
 
