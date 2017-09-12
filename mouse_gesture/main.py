@@ -29,9 +29,6 @@ do_output = False
 
 lock = threading.Lock()
 
-#lock_mx = Lock()
-#counter = Value('i', 0) # int type，相当于java里面的原子变量
-
 
 class Block:
     x1 = 0
@@ -248,7 +245,7 @@ def main():  #TODO: display, logging
             pass
 
         pass
-    
+
     os.kill(os.getpid(), signal.SIGTERM)
     pass
 
@@ -350,7 +347,7 @@ def wipe_pwd():
     pass
 
 
-def update_blocks(x1, y1, x2, y2, section_w=3, section_h=3, gap_rate=0.1):
+def update_blocks(x1, y1, x2, y2, section_w=3, section_h=3, gap_rate=0.13):
     global trigger
     global isGen
     global mouse_x
@@ -438,6 +435,7 @@ def screen_lock(islock):
         xtrlock_proc.kill()
         pass
     pass
+
 
 if __name__ == '__main__':
     main()
