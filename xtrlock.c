@@ -293,33 +293,7 @@ int lock()
         window = trans_window;
 
         XSelectInput(display, window, KeyPressMask | KeyReleaseMask);
-        /*
-           if(!XAllocNamedColor(display,
-           DefaultColormap(display, DefaultScreen(display)),
-           "black",
-           &dummy, &xc_fg)
-           ){fprintf(stderr, "Failed to allocate foreground color!\n");}
-
-           if(!XAllocNamedColor(display,
-           DefaultColormap(display, DefaultScreen(display)),
-           "steelblue3",
-           &dummy, &xc_bg)
-           && !XAllocNamedColor(display,
-           DefaultColormap(display, DefaultScreen(display)),
-           "black",
-           &dummy, &xc_bg)
-           && !XAllocNamedColor(display,
-           DefaultColormap(display, DefaultScreen(display)),
-           "white",
-           &dummy, &xc_bg)
-           ){fprintf(stderr, "Failed to allocate background color!\n");}
-
-           pmcsr = XCreateBitmapFromData(display, window, csr_bits, lock_width, lock_height);
-
-           cursor = XCreatePixmapCursor(display, pmcsr, pmcsr, &xc_fg, &xc_bg, lock_x_hot, lock_y_hot);
-           cursor = XCreatePixmapCursor(display, pmcsr, pmcsr, &xc_fg, &xc_bg, 0, 0);
-           */
-        csr = XCreateBitmapFromData(display, window, csr_bits, 1, 1);
+         csr = XCreateBitmapFromData(display, window, csr_bits, 1, 1);
 
         cursor = XCreatePixmapCursor(display, csr, csr, &xcolor, &xcolor, 1, 1);
         XMapWindow(display, window);
@@ -450,6 +424,7 @@ int main(int argc, char** argv)
 { /*TODO: Add keeper process*/
         /*TODO: Record failed trails -with time*/
         /*TODO: add deb/rpm packages*/
+        /*TODO: add no mouse override mod*/
         errno = 0;
         bool need_lock = false;
         cust_pw_setting.enable = false;
