@@ -28,7 +28,7 @@ mask = ScreenMask(
             Size(
                 0,
                 0,
-                1300,  #init window
+                2000,  #init window
                 2000))
 
 xtrlock_path = "/usr/bin/xtrlock"
@@ -441,7 +441,8 @@ def update_blocks(x1, y1, x2, y2, section_w=3, section_h=3, gap_rate=0.13):
             block = Block(buf_x1, buf_y1, buf_x2, buf_y2, block_value)
             blocks.append(block)  #add at first
             #display block at window
-            mask.add_square(int(block.x1), int(block.y1), int(block.x2), int(block.y2))
+            #mask.add_square(int(block.x1/10), int(block.y1/10), int(block.x2/10), int(block.y2/10))
+            mask.add_text(block)
             logging.debug(block.info())
             block_value += 1
             buf_x1 += gapx + block_w  #x1->1
