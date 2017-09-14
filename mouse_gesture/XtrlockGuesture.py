@@ -174,7 +174,7 @@ def create_default(path):
     pass
 
 
-def main():  #TODO: display, logging
+def main():  #TODO: display custom_lock_cmd
     global isGen
     global mouse_x
     global lock_mx
@@ -486,7 +486,7 @@ def screen_lock(islock):
     global xtrlock_proc
     if islock:
         xtrlock_proc = subprocess.Popen(
-            args=(xtrlock_path, "-p123", "-n"), stdout=subprocess.PIPE)
+            args=(xtrlock_path, "-p123", "-n", "-k"), stdout=subprocess.PIPE)
         logging.info("Successfully locked")
         pass
     else:
