@@ -1,23 +1,20 @@
 import gi
+from Xlib import *
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk
 
 
-class MyWindow(Gtk.Window):
+class Mask(Gtk.Window):
     def __init__(self):
         Gtk.Window.__init__(self, title="Hello World")
-        self.button = Gtk.Button(label="Click Here")
-        self.button.connect("clicked", self.on_button_clicked)
-        self.add(self.button)
+        self.darea=Gtk.DrawingArea()
+        self.darea.set_size_request(3000,3000)
+        self.add(self.darea)
 
-    def on_button_clicked(self, widget):
-        print("Hello World")
-
-
-win = MyWindow()
-win.connect("delete-event", Gtk.main_quit)
-win.show_all()
-Gtk.main()
 
 if __name__ == "__main__":
+    win = Mask()
+    win.connect("delete-event", Gtk.main_quit)
+    win.show_all()
+    Gtk.main()
     pass

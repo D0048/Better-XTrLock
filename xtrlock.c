@@ -42,8 +42,10 @@
 #include <libnotify/notify.h>
 #include <gdk-pixbuf/gdk-pixbuf.h>
 
-#include "resources/lock.xbm"
-//#include "resources/lock_origin.h"
+//#include "resources/lock.xbm"
+//#include "resources/lock.xbm"
+#include "resources/lock_origin.xbm"
+#include "resources/lock_origin_mask.xbm"
 
 #ifdef SHADOW_PWD
 #include <shadow.h>
@@ -73,6 +75,7 @@ int total_fail=0;
 #define GOODWILLPORTION 0.3
 bool blank_screen = false;
 bool send_notification = false;
+bool keep_cursor=false;
 int blink_delay = 100;
 
 struct { /*Setting correspond to the custom passwd setting. --d0048*/
@@ -122,6 +125,7 @@ void print_help()
                         "    -b --block-screen                            lock with a blank screen\n"
                         "    -d --delay of blink     [delay_usec]         milliseconds the screen blinks on successful locks(0 for no-delay & 100000 for 0.1 s)\n"
                         "    -n --notify                                  send message notification on lock and unlock\n"
+                        "    -k --keep-cursor                             keep the little blue lock cursor icon\n"
                         "Thanks for using!\n");
 }
 
@@ -225,12 +229,11 @@ int lock()
         long goodwill = INITIALGOODWILL, timeout = 0;
         XSetWindowAttributes attrib;
         Cursor cursor;
-        //Pixmap pmcsr;
-        //XColor xc_fg, xc_bg, dummy;
+        Pixmap csr_source,csr_mask;
+        XColor csr_fg, csr_bg, dummy;
         Pixmap csr;
         XColor xcolor;
         int ret;
-        //static char *csr_bits = lock_bits;
         static char csr_bits[]= {0x00};
         struct timeval tv;
         int tvt, gs;
@@ -293,9 +296,43 @@ int lock()
         window = trans_window;
 
         XSelectInput(display, window, KeyPressMask | KeyReleaseMask);
-         csr = XCreateBitmapFromData(display, window, csr_bits, 1, 1);
 
-        cursor = XCreatePixmapCursor(display, csr, csr, &xcolor, &xcolor, 1, 1);
+        if(keep_cursor){/*display cursor*/
+                debug_print("Using keep pointer mode!\n");
+                csr_source= XCreateBitmapFromData(display,window,lock_origin_bits,lock_origin_width,lock_origin_height);
+                csr_mask= XCreateBitmapFromData(display,window,lock_origin_mask_bits,lock_origin_mask_width,lock_origin_mask_height);
+
+                ret = XAllocNamedColor(display,
+                                DefaultColormap(display, DefaultScreen(display)),
+                                "steelblue3",
+                                &dummy, &csr_bg);
+                if (ret==0)
+                        XAllocNamedColor(display,
+                                        DefaultColormap(display, DefaultScreen(display)),
+                                        "black",
+                                        &dummy, &csr_bg);
+                else{
+                        debug_print("Error allocating color!\n");}
+
+                ret = XAllocNamedColor(display,
+                                DefaultColormap(display,DefaultScreen(display)),
+                                "grey25",
+                                &dummy, &csr_fg);
+                if (ret==0)
+                        XAllocNamedColor(display,
+                                        DefaultColormap(display, DefaultScreen(display)),
+                                        "white",
+                                        &dummy, &csr_bg);
+                else{
+                        debug_print("Error allocating color!\n");}
+
+                cursor= XCreatePixmapCursor(display,csr_source,csr_mask,&csr_fg,&csr_bg,
+                                lock_origin_x_hot,lock_origin_y_hot);
+        }
+        else{
+                csr = XCreateBitmapFromData(display, window, csr_bits, 1, 1);
+                cursor = XCreatePixmapCursor(display, csr, csr, &xcolor, &xcolor, 1, 1);
+        }
         XMapWindow(display, window);
 
         /*Sometimes the WM doesn't ungrab the keyboard quickly enough if
@@ -451,11 +488,12 @@ int main(int argc, char** argv)
                 {"block-screen", no_argument, NULL, 'b'},
                 {"delay-of-blink", required_argument, NULL, 'd'},
                 {"notify", no_argument, NULL, 'n'},
+                {"keep-cursor", no_argument, NULL, 'k'},
                 {NULL, 0, NULL, 0}
         };
         char opt = 0;
         //while ((opt = getopt(argc, argv, "hp:e:c:lbd:n")) != -1) {
-        while ((opt = getopt_long(argc, argv, "hp:e:c:lbd:n", long_options, NULL)) != -1) {
+        while ((opt = getopt_long(argc, argv, "hp:e:c:lbd:nk", long_options, NULL)) != -1) {
                 debug_print("Processing args: \"%c|%c\"\n", opt, optopt);
 
                 if ('h' == opt) { /*help(no arg)*/
@@ -501,6 +539,10 @@ int main(int argc, char** argv)
                 if('n' == opt){/*send notification*/
                         send_notification = true;
                 }
+                if('k' == opt){/*keep cursor*/
+                        keep_cursor = true;
+                }
+
                 if('?' == opt){
                         print_help();
                         exit(1);
