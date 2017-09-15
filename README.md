@@ -39,3 +39,7 @@ Redhat series: `sudo dnf install bash-completion libnotify-dev libx11-dev build-
 1. Download the correct version of source code you want and unzip it.(Probably from releases if stability is required)
 2. `cd Better-XTrLock`
 3. `sudo make remove`
+
+#### Requirements:
+1. PyGObject ( https://pygobject.readthedocs.io/en/latest/index.html )
+2. Python 3
