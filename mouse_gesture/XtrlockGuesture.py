@@ -10,7 +10,7 @@ import signal
 import subprocess
 import logging
 
-from Mask import *
+#from Mask import *
 
 global isGen
 global mouse_x
@@ -21,7 +21,8 @@ global blocks
 global xtrlock_proc
 global xtrlock_path
 global lock
-global mask
+global back_up_pwd_hash
+#global mask
 """mask = ScreenMask(
             display.Display(),
             "Hello, World!",
@@ -31,6 +32,7 @@ global mask
                 2000,  #init window
                 2000))"""
 
+back_up_pwd_hash = "ZPxA3rByYGIZc"  #using 123 as default...
 xtrlock_path = "/usr/bin/xtrlock"
 mouse_x = 1
 mouse_y = 1
@@ -151,12 +153,13 @@ def ms_init():
         pass
 
 
+"""
 def wd_init():
     with lock:
         global mask
         mask.loop()
     pass
-
+"""
 
 def create_default(path):
     logging.info("Pharsing default and writing to " + path)
@@ -168,6 +171,8 @@ def create_default(path):
     config.set(section="Setting", option="SizeY1", value='1000')
     config.set(section="Setting", option="SizeX2", value='1000')
     config.set(section="Setting", option="SizeY2", value='1000')
+    config.set(
+        section="Setting", option="Back_up_pwd_hash", value="ZPxA3rByYGIZc")
     config.set(
         section="Setting", option="Xtrlock_path", value="/usr/bin/xtrlock")
     config.write(open(path, 'w+', encoding='utf_8_sig'))
@@ -224,12 +229,12 @@ def main():  #TODO: display custom_lock_cmd
 
     if args.log_file == "nah":  #logging handle
         logging.basicConfig(level=args.log_level)
-        logging.debug(
+        logging.info(
             "Using log level {} without log file".format(args.log_level))
         pass
     else:
         logging.basicConfig(filename=args.log_file, level=args.log_level)
-        logging.debug("Using log level {} to file {}".format(
+        logging.info("Using log level {} to file {}".format(
             args.log_level, args.log_file))
         pass
 
@@ -279,8 +284,8 @@ def main():  #TODO: display custom_lock_cmd
 
     else:  #use
         try:
-            wd_t = threading.Thread(target=wd_init, args=())  #wd init
-            wd_t.start()
+            #wd_t = threading.Thread(target=wd_init, args=())  #wd init
+            #wd_t.start()
             logging.debug("gui launched")
             logging.debug("Reading config file from: " + config_file)
             cp = configparser.ConfigParser()
@@ -291,6 +296,7 @@ def main():  #TODO: display custom_lock_cmd
             #kb_t.start()
             ms_t = threading.Thread(target=ms_init, args=())
             ms_t.start()
+            hash_bk_pwd("test")
             screen_lock(True)
             xtrlock_proc.wait()
         except Exception as e:
@@ -305,8 +311,9 @@ def main():  #TODO: display custom_lock_cmd
 
 def read_conf(cp):
     #xtrlock_pat
-    global xtrlock_path
+    global xtrlock_path, back_up_pwd_hash
     xtrlock_path = cp.get(section="Setting", option="Xtrlock_path")
+    back_up_pwd_hash = cp.get(section="Setting", option="Back_up_pwd_hash")
     #SizeX1/Y1
     x1 = cp.getint(section="Setting", option="SizeX1")
     x2 = cp.getint(section="Setting", option="SizeX2")
@@ -331,9 +338,21 @@ def update_conf(path, cp):
         format(cp.get(section="Setting", option="Xtrlock_path")))
     if new_path != '':
         xtrlock_path = new_path
-        cp.set(section="Setting", option="Xtrlock_path", value=str(x1))
+        cp.set(
+            section="Setting", option="Xtrlock_path", value=str(xtrlock_path))
         pass
-
+    #bk_pwd
+    global back_up_pwd_hash
+    new_str = input(
+        "enter you backup passwork(in case pattern lock failed)({}):".format(
+            cp.get(section="Setting", option="Back_up_pwd_hash")))
+    if new_str != '':
+        back_up_pwd_hash = hash_bk_pwd(new_str)
+        cp.set(
+            section="Setting",
+            option="Back_up_pwd_hash",
+            value=str(back_up_pwd_hash))
+        pass
     #SizeX1/Y1
     input("SizeX1/Y1(enter to set current mouse position as the first point)")
     x1 = lock_mx
@@ -486,12 +505,22 @@ def screen_lock(islock):
     global xtrlock_proc
     if islock:
         xtrlock_proc = subprocess.Popen(
-            args=(xtrlock_path, "-p123", "-n", "-k"), stdout=subprocess.PIPE)
+            args=(xtrlock_path, "-e"+ back_up_pwd_hash, "-n", "-k"),
+            stdout=subprocess.PIPE)
         logging.info("Successfully locked")
         pass
     else:
         xtrlock_proc.kill()
         pass
+    pass
+
+
+def hash_bk_pwd(str_pwd):
+    hash_in = os.popen(xtrlock_path + " " + "-c" + str_pwd, 'r')
+    hash_bk = hash_in.readline()
+    logging.info("Hashed backup pwd:" + hash_bk)
+    hash_in.close()
+    return hash_bk
     pass
 
 
