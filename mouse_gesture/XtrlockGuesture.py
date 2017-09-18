@@ -172,7 +172,7 @@ def create_default(path):
     pass
 
 
-def main():  #TODO: display custom_lock_cmd
+def main():  #TODO: display setup.py
     global isGen
     global mouse_x
     global lock_mx
