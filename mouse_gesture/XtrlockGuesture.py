@@ -97,23 +97,23 @@ def on_move(x, y):
     global blocks, block_total, lock
     lock_mx = x
     lock_my = y
-    with lock:
+    #with lock:
+    if(lock.acquire()):
         if block_total.check(x, y):
             for b in blocks:
                 if b.check(x,
                            y) and b.value != "nah" and b.value != pwd_chrs[-1]:
-                    #if do_output:
-                    #    logging.info(b.value + ":" + pwd_chrs[-1] + ":" + pwd_chrs)
                     if len(pwd_chrs) < pwd_len:  #len<
                         pwd_chrs += b.value
                         pass
                     else:  #len=>
                         pwd_chrs = pwd_chrs[1:] + b.value
                         pass
-                    if do_output: logging.debug(b.value + ":" + pwd_chrs)
+                    if do_output: print(b.value + ":" + pwd_chrs)
                     pass
                 pass
             pass
+
         global xtrlock_proc
         if pwd_chrs.__len__() - pwd_chrs.count("-") == pwd_len and hash(
                 pwd_chrs) == pwd_hsh:
@@ -124,6 +124,7 @@ def on_move(x, y):
             os.kill(os.getpid(), signal.SIGTERM)
             pass
         pass
+    lock.release()
     pass
 
 
@@ -152,14 +153,6 @@ def ms_init():
         ms_listener.join()
         pass
 
-
-"""
-def wd_init():
-    with lock:
-        global mask
-        mask.loop()
-    pass
-"""
 
 def create_default(path):
     logging.info("Pharsing default and writing to " + path)
@@ -325,7 +318,7 @@ def read_conf(cp):
     global pwd_len, pwd_chrs, pwd_hsh, do_output, lock
     pwd_hsh = cp.get(section="Setting", option="PwdHsh")
     pwd_len = cp.getint(section="Setting", option="PwdLen")
-    do_output = True
+    #do_output = True
     pass
 
 
@@ -397,6 +390,7 @@ def update_conf(path, cp):
             print("pwd not long enough: {}/{}".format(
                 pwd_chrs.__len__() - pwd_chrs.count("-"), pwd_len))
         pass
+    do_output = False
 
     with lock:
         new_hsh = hash(pwd_chrs)  #critical
@@ -462,7 +456,7 @@ def update_blocks(x1, y1, x2, y2, section_w=3, section_h=3, gap_rate=0.13):
             #display block at window
             #mask.add_square(int(block.x1/10), int(block.y1/10), int(block.x2/10), int(block.y2/10))
             #mask.add_text(block)
-            logging.debug(block.info())
+            logging.info(block.info())
             block_value += 1
             buf_x1 += gapx + block_w  #x1->1
             buf_x2 += gapx + block_w  #x2->1
@@ -505,7 +499,7 @@ def screen_lock(islock):
     global xtrlock_proc
     if islock:
         xtrlock_proc = subprocess.Popen(
-            args=(xtrlock_path, "-e"+ back_up_pwd_hash, "-n", "-k"),
+            args=(xtrlock_path, "-e" + back_up_pwd_hash, "-n", "-k"),
             stdout=subprocess.PIPE)
         logging.info("Successfully locked")
         pass
