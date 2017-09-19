@@ -21,7 +21,7 @@ Please check out the releases to grab a finished version! Any contribution would
 
 d0048
 
-#### Installation Guide:
+#### Basic Installation Guide:
 ##### On linux:
 1. Install required libiary and tools to build the project:
 Debian series: `sudo apt-get install bash-completion libnotify-dev libx11-dev build-essential cmake cmake-data pkg-config`
@@ -34,12 +34,12 @@ Redhat series: `sudo dnf install bash-completion libnotify-dev libx11-dev build-
 7. To trigger xtrlock on lid close, `sudo make install.on_lid LID_CMD='lock_command_with_args'`.(e.g: `LID_CMD='xtrlock -l -n'`). If no command specified, `xtrlock -l` will be used.
 8. `xtrlock -h` to view usage
 
-#### Removal Guide:
+#### Basic Removal Guide:
 ##### On linux:
 1. Download the correct version of source code you want and unzip it.(Probably from releases if stability is required)
 2. `cd Better-XTrLock`
 3. `sudo make remove`
 
-#### Requirements:
-1. PyGObject ( https://pygobject.readthedocs.io/en/latest/index.html )
-2. Python 3
+#### Mouse Gesture Lock Support installation Guide(Alpha):
+##### On linux:
+1.Make sure you have `Python3` installed.

@@ -1,3 +1,4 @@
+#!/usr/bin/python3
 from pynput.keyboard import *
 from pynput import mouse
 import threading
@@ -22,15 +23,6 @@ global xtrlock_proc
 global xtrlock_path
 global lock
 global back_up_pwd_hash
-#global mask
-"""mask = ScreenMask(
-            display.Display(),
-            "Hello, World!",
-            Size(
-                0,
-                0,
-                2000,  #init window
-                2000))"""
 
 back_up_pwd_hash = "ZPxA3rByYGIZc"  #using 123 as default...
 xtrlock_path = "/usr/bin/xtrlock"
@@ -91,14 +83,12 @@ def on_release(key):
 def on_move(x, y):
     global do_output, pwd_hsh, pwd_len, pwd_chrs
     #if do_output: logging.info('Pointer moved to {0}'.format((x, y)))
-    #ohash = hashlib.md5((str(x) + str(y)).encode('utf-8')).hexdigest()
-    #logging.info(str(ohash))
     global lock_mx, lock_my
     global blocks, block_total, lock
     lock_mx = x
     lock_my = y
     #with lock:
-    if(lock.acquire()):
+    if (lock.acquire()):
         if block_total.check(x, y):
             for b in blocks:
                 if b.check(x,
@@ -216,7 +206,7 @@ def main():  #TODO: display setup.py
         type=str,
         dest="config_file",
         help="specify the config file to use/write, default as xtrlock.conf",
-        default="xtrlock.conf")
+        default="~/.xtrlock.conf")
 
     args = parser.parse_args()
 
@@ -277,8 +267,6 @@ def main():  #TODO: display setup.py
 
     else:  #use
         try:
-            #wd_t = threading.Thread(target=wd_init, args=())  #wd init
-            #wd_t.start()
             logging.debug("gui launched")
             logging.debug("Reading config file from: " + config_file)
             cp = configparser.ConfigParser()
@@ -318,7 +306,6 @@ def read_conf(cp):
     global pwd_len, pwd_chrs, pwd_hsh, do_output, lock
     pwd_hsh = cp.get(section="Setting", option="PwdHsh")
     pwd_len = cp.getint(section="Setting", option="PwdLen")
-    #do_output = True
     pass
 
 
