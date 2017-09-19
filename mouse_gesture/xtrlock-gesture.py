@@ -206,7 +206,7 @@ def main():  #TODO: display setup.py
         type=str,
         dest="config_file",
         help="specify the config file to use/write, default as xtrlock.conf",
-        default="~/.xtrlock.conf")
+        default=os.path.expanduser("~/.xtrlock.conf"))
 
     args = parser.parse_args()
 
