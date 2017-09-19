@@ -53,6 +53,11 @@ install.on_lid:
 	$(INSTALL) -c -m 744 -o root xtrlock-lid-down /etc/acpi/events/xtrlock-lid-down
 	$(INSTALL) -c -m 744 -o root ./on-lid-close.sh.tmp /etc/acpi/on-lid-close.sh
 	rm -f on-lid-close.sh.tmp
+
+install.gesture_support:
+	$(INSTALL) -c -m 754 -i root ./mouse_gesture/xtrlock-gesture.py /usr/bin/xtrlock-gesture
+	echo "Please check the manual or https://github.com/D0048/Better-XTrLock for futher support of setting up the gesture support..."
+
 remove:
 	$(RM) /usr/bin/xtrlock
 	$(RM) -rf $(CONFIGPATH)
