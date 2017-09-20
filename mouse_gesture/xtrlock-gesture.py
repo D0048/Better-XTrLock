@@ -197,7 +197,7 @@ def main():  #TODO: display setup.py
         action='store',
         type=bool,
         dest="gen",
-        help="record pwd and generate the config file",
+        help="record pwd and generate the config file (please use -g1)",
         default=False)
     parser.add_argument(  #config file?
         '-c',
@@ -205,7 +205,7 @@ def main():  #TODO: display setup.py
         action='store',
         type=str,
         dest="config_file",
-        help="specify the config file to use/write, default as xtrlock.conf",
+        help="specify the config file to use/write, default as ~/xtrlock.conf",
         default=os.path.expanduser("~/.xtrlock.conf"))
 
     args = parser.parse_args()
@@ -310,7 +310,7 @@ def read_conf(cp):
 
 
 def update_conf(path, cp):
-    print("Please enter the new config (enter to use the old value)")
+    print("Please enter the new configuration (enter to use the old value)")
     #xtrlock_path
     global xtrlock_path
     new_path = input(

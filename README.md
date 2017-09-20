@@ -47,4 +47,5 @@ Debian series: `sudo apt-get install bash-completion libnotify-dev libx11-dev bu
 3. Install the required dependencies using pip. `sudo pip install python-pip`
 4. Install the python scripts to place. `sudo make install.gesture_support`
 5. Use this Guide to record your own pattern into the config file:
+
 [![Pattern Lock Usage](https://cdn2.iconfinder.com/data/icons/buttons-9/128/Button_Next-01.png)](https://github.com/D0048/Better-XTrLock/blob/master/README_GESTURE.md)<br>
