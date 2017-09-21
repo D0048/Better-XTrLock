@@ -4,6 +4,7 @@ from pynput import mouse
 import threading
 import multiprocessing
 from multiprocessing import *
+from ctypes import *
 import hashlib
 import argparse
 import configparser
@@ -23,7 +24,9 @@ global xtrlock_proc
 global xtrlock_path
 global lock
 global back_up_pwd_hash
+global mask
 
+mask = None
 back_up_pwd_hash = "ZPxA3rByYGIZc"  #using 123 as default...
 xtrlock_path = "/usr/bin/xtrlock"
 mouse_x = 1
@@ -229,6 +232,11 @@ def main():  #TODO: display, setup.py
     config_file = args.config_file
     logging.info(
         "Using config file: {}".format(args.config_file))  #where to record
+
+    global mask
+
+    mask=cdll.LoadLibrary('./mask.so')#load mask.so
+    mask.x_init()
 
     if (isGen):  #generate
         #kb_t = threading.Thread(target=kb_init, args=())

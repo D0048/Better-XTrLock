@@ -14,21 +14,6 @@ GC gc;
 unsigned long black,white;
 XSetWindowAttributes attrib;
 
-void init_x();
-bool draw_squre_screen_coord();
-
-int main(){
-        init_x();
-        while(true){}
-        return 0;
-}
-
-bool draw_squre_screen_coord(int x1, int y1, int x2, int y2){
-        XDrawRectangle(dis, win, gc, x1, y1, x2, y2);
-        XSync(dis, False);
-        return true;
-}
-
 void init_x() {
         dis=XOpenDisplay(0);
         screen=DefaultScreen(dis);
@@ -53,6 +38,12 @@ void init_x() {
         gc=XCreateGC(dis, win, 0,0);
         XSync(dis, False);
 }
+bool draw_squre_screen_coord(int x1, int y1, int x2, int y2){
+        XDrawRectangle(dis, win, gc, x1, y1, x2, y2);
+        XSync(dis, False);
+        return true;
+}
+
 
 void close_x(){
         XFreeGC(dis, gc);

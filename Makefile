@@ -23,16 +23,22 @@ CONFIGPATH=/usr/share/xtrlock/
 RESPATH=-D'LOCK_IMG_PATH="$(CONFIGPATH)lock.png"' -D'UNLOCK_IMG_PATH="$(CONFIGPATH)unlock.png"' -D'WARN_IMG_PATH="$(CONFIGPATH)warn.png"'
 #RESPATH=-D'LOCK_IMG_PATH="$(shell readlink -f lock.png)"' -D'UNLOCK_IMG_PATH="$(shell readlink -f unlock.png)"'
 LID_CMD:=xtrlock -l
+MASK_PATH=./mouse_gesture/
 
 xtrlock:	xtrlock.o
 
 xtrlock.o:	xtrlock.c
+
+mask.so: ./mouse_gesture/mask.c
+	$(CC) -fPIC -shared -o $(MASK_PATH)mask.so $(MASK_PATH)mask.c -lX11
 
 debug:
 	$(CC) xtrlock.c $(LDLIBS) $(CFLAGS) $(CDEFS) -DDEBUG -g -o xtrlock
 
 clean:
 	-rm -f xtrlock.o xtrlock
+	-rm -f $(MASK_PATH)mask.o
+	-rm -f $(MASK_PATH)mask.so
 
 install:	xtrlock
 	$(INSTALL) -c -m 2755 -o root -g shadow xtrlock /usr/bin
