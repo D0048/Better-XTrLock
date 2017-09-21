@@ -99,7 +99,7 @@ def on_move(x, y):
                     else:  #len=>
                         pwd_chrs = pwd_chrs[1:] + b.value
                         pass
-                    if do_output: print(b.value + ":" + pwd_chrs)
+                    if do_output: print(b.value + ":" + pwd_chrs+"\r")
                     pass
                 pass
             pass
@@ -162,7 +162,7 @@ def create_default(path):
     pass
 
 
-def main():  #TODO: display setup.py
+def main():  #TODO: display, setup.py
     global isGen
     global mouse_x
     global lock_mx
