@@ -17,6 +17,13 @@ void init_x();
 bool draw_squre_screen_coord(int x1, int y1, int x2, int y2);
 void close_x();
 
+int main(){
+        init_x();
+        draw_squre_screen_coord(0,0,100,100);
+        while(true){}
+        return 0;
+}
+
 void init_x() {
         dis=XOpenDisplay(0);
         screen=DefaultScreen(dis);
