@@ -17,6 +17,7 @@ void init_x();
 bool draw_squre_screen_coord(int x1, int y1, int x2, int y2);
 void mask_show();
 void mask_hide();
+void mask_clear();
 void close_x();
 int abs(int a);
 
@@ -77,6 +78,11 @@ void close_x(){
         XDestroyWindow(dis,win);
         XCloseDisplay(dis);
 }
+
+void mask_clear(){
+        XClearWindow(dis, win);
+}
+
 
 int abs(int a){
         if(a<0) return -a;
