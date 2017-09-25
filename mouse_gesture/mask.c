@@ -13,6 +13,9 @@ GC gc;
 
 unsigned long black,white;
 XSetWindowAttributes attrib;
+void init_x();
+bool draw_squre_screen_coord(int x1, int y1, int x2, int y2);
+void close_x();
 
 void init_x() {
         dis=XOpenDisplay(0);
@@ -24,7 +27,7 @@ void init_x() {
                 exit(1);
         }
 
-        attrib.override_redirect = False;
+        attrib.override_redirect = True;/*full screen*/
         attrib.background_pixel=white;
 
         blank_win= XCreateWindow(dis, DefaultRootWindow(dis), /*init blank window*/

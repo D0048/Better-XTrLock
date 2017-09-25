@@ -12,8 +12,6 @@ import signal
 import subprocess
 import logging
 
-#from Mask import *
-
 global isGen
 global mouse_x
 global lock_mx
@@ -102,7 +100,7 @@ def on_move(x, y):
                     else:  #len=>
                         pwd_chrs = pwd_chrs[1:] + b.value
                         pass
-                    if do_output: print(b.value + ":" + pwd_chrs+"\r")
+                    if do_output: print(b.value + ":" + pwd_chrs + "\r")
                     pass
                 pass
             pass
@@ -235,8 +233,8 @@ def main():  #TODO: display, setup.py
 
     global mask
 
-    mask=cdll.LoadLibrary('./mask.so')#load mask.so
-    mask.x_init()
+    mask = cdll.LoadLibrary('./mask.so')  #load mask.so
+    mask.init_x()
 
     if (isGen):  #generate
         #kb_t = threading.Thread(target=kb_init, args=())
@@ -442,15 +440,17 @@ def update_blocks(x1, y1, x2, y2, section_w=3, section_h=3, gap_rate=0.13):
     block_value = 1
     buf_x1, buf_y1, buf_x2, buf_y2 = x1, y1, x1 + block_w, y1 + block_h
 
-    #global mask
+    global mask
 
     for ih in range(0, section_h):
         for iw in range(0, section_w):
             block = Block(buf_x1, buf_y1, buf_x2, buf_y2, block_value)
             blocks.append(block)  #add at first
+
             #display block at window
-            #mask.add_square(int(block.x1/10), int(block.y1/10), int(block.x2/10), int(block.y2/10))
+            mask.draw_squre_screen_coord(int(block.x1/10), int(block.y1/10), int(block.x2/10), int(block.y2/10))
             #mask.add_text(block)
+
             logging.info(block.info())
             block_value += 1
             buf_x1 += gapx + block_w  #x1->1
