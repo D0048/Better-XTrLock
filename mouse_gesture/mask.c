@@ -15,6 +15,8 @@ unsigned long black,white;
 XSetWindowAttributes attrib;
 void init_x();
 bool draw_squre_screen_coord(int x1, int y1, int x2, int y2);
+void mask_show();
+void mask_hide();
 void close_x();
 int abs(int a);
 
@@ -47,7 +49,6 @@ void init_x() {
                         CWOverrideRedirect | CWBackPixel, &attrib);
         win=blank_win;
 
-        XMapWindow(dis,win);
         gc=XCreateGC(dis, win, 0,0);
         XSync(dis, False);
 }
@@ -59,6 +60,13 @@ bool draw_squre_screen_coord(int x1, int y1, int x2, int y2){
         XDrawRectangle(dis, win, gc, x, y, sizex, sizey);
         XSync(dis, False);
         return true;
+}
+
+void mask_show(){
+        XMapWindow(dis,win);
+}
+void mask_hide(){
+        XUnmapWindow(dis,win);
 }
 
 
