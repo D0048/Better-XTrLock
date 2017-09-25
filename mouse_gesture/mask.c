@@ -48,7 +48,7 @@ void init_x() {
                         0, DefaultDepth(dis, DefaultScreen(dis)), CopyFromParent, DefaultVisual(dis, DefaultScreen(dis)),
                         CWOverrideRedirect | CWBackPixel, &attrib);
         win=blank_win;
-
+        //XMapWindow(dis,win);
         gc=XCreateGC(dis, win, 0,0);
         XSync(dis, False);
 }
@@ -64,9 +64,11 @@ bool draw_squre_screen_coord(int x1, int y1, int x2, int y2){
 
 void mask_show(){
         XMapWindow(dis,win);
+        XSync(dis, False);
 }
 void mask_hide(){
         XUnmapWindow(dis,win);
+        XSync(dis, False);
 }
 
 
