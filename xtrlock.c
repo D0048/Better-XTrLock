@@ -388,6 +388,7 @@ int lock()
         if(send_notification){
                 notify_lock(true);
         }
+        XSync(display, False);
         printf("Successfully locked\n");
 
         for (;;) { /*start checker loop*/

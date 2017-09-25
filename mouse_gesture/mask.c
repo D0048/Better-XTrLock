@@ -16,10 +16,13 @@ XSetWindowAttributes attrib;
 void init_x();
 bool draw_squre_screen_coord(int x1, int y1, int x2, int y2);
 void close_x();
+int abs(int a);
 
 int main(){
         init_x();
         draw_squre_screen_coord(0,0,100,100);
+        draw_squre_screen_coord(100,100,200,200);
+        draw_squre_screen_coord(200,200,300,300);
         while(true){}
         return 0;
 }
@@ -49,7 +52,11 @@ void init_x() {
         XSync(dis, False);
 }
 bool draw_squre_screen_coord(int x1, int y1, int x2, int y2){
-        XDrawRectangle(dis, win, gc, x1, y1, x2, y2);
+        int x=(x1+x2)/2;
+        int y=(y1+y2)/2;
+        int sizex=abs(x1-x2)/2;
+        int sizey=abs(y1-y2)/2;
+        XDrawRectangle(dis, win, gc, x, y, sizex, sizey);
         XSync(dis, False);
         return true;
 }
@@ -59,4 +66,9 @@ void close_x(){
         XFreeGC(dis, gc);
         XDestroyWindow(dis,win);
         XCloseDisplay(dis);
+}
+
+int abs(int a){
+        if(a<0) return -a;
+        else return a;
 }

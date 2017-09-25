@@ -448,7 +448,7 @@ def update_blocks(x1, y1, x2, y2, section_w=3, section_h=3, gap_rate=0.13):
             blocks.append(block)  #add at first
 
             #display block at window
-            mask.draw_squre_screen_coord(int(block.x1/10), int(block.y1/10), int(block.x2/10), int(block.y2/10))
+            mask.draw_squre_screen_coord(int(block.x1), int(block.y1), int(block.x2), int(block.y2))
             #mask.add_text(block)
 
             logging.info(block.info())
