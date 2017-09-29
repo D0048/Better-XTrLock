@@ -333,8 +333,7 @@ int lock()
                 csr = XCreateBitmapFromData(display, window, csr_bits, 1, 1);
                 cursor = XCreatePixmapCursor(display, csr, csr, &xcolor, &xcolor, 1, 1);
         }
-        XMapWindow(display, window);
-
+        XMapWindow(display, trans_window);
         /*Sometimes the WM doesn't ungrab the keyboard quickly enough if
          *launching xtrlock from a keystroke shortcut, meaning xtrlock fails
          *to start We deal with this by waiting (up to 100 times) for 10,000
@@ -376,13 +375,13 @@ int lock()
                 msleep(blink_delay); /*0.1s as default, or custom value*/
                 XUnmapWindow(display, blank_window);
                 debug_print("Unmapped after %i u seconds\n", blink_delay);
-                XMapWindow(display, trans_window);
                 XFlush(display);
                 debug_print("locked and blinked\n");
         }
 
         if(blank_screen){
                 XMapWindow(display, blank_window);
+                XFlush(display);
         }
 
         if(send_notification){
