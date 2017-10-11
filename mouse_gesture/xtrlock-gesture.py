@@ -371,11 +371,14 @@ def update_conf(path, cp):
         pass
 
     #new_pwd_chrs=""
+    mask.mask_show()
+    draw_blocks()
     while True:
         wipe_pwd()
         do_output = True
-        mask.mask_show()
-        draw_blocks()
+        mask.put_str(
+            "use the mouse to create the pattern in the area set and press enter to confirm):",
+            0, 0)
         input(
             "use the mouse to create the pattern in the area set and press enter to confirm):"
         )
@@ -444,6 +447,7 @@ def update_blocks(x1, y1, x2, y2, section_w=3, section_h=3, gap_rate=0.13):
 
     block_value = 1
     buf_x1, buf_y1, buf_x2, buf_y2 = x1, y1, x1 + block_w, y1 + block_h
+    blocks.clear()
 
     for ih in range(0, section_h):
         for iw in range(0, section_w):
@@ -459,13 +463,14 @@ def update_blocks(x1, y1, x2, y2, section_w=3, section_h=3, gap_rate=0.13):
         buf_x1 = x1
         buf_x2 = x1 + block_w
         pass
-    draw_blocks()
+    #draw_blocks()
     pass
 
 
 def draw_blocks():
     global mask, blocks
     #display block at window
+    logging.info("blocks drew")
     for block in blocks:
         mask.draw_squre_screen_coord(
             int(block.x1), int(block.y1), int(block.x2), int(block.y2))
