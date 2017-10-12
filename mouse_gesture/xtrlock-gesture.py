@@ -5,6 +5,7 @@ import threading
 import multiprocessing
 from multiprocessing import *
 from ctypes import *
+import ctypes
 import hashlib
 import argparse
 import configparser
@@ -376,12 +377,12 @@ def update_conf(path, cp):
     while True:
         wipe_pwd()
         do_output = True
-        mask.put_str(
-            "use the mouse to create the pattern in the area set and press enter to confirm):",
-            0, 0)
-        input(
-            "use the mouse to create the pattern in the area set and press enter to confirm):"
-        )
+        msg = "use the mouse to create the pattern in the area set and press enter to confirm, Ctrl+C twice to exit:".encode(
+            'utf-8')
+        mask.put_str.argtypes = [ctypes.c_char_p, c_int, c_int]
+        mask.put_str(  #TODO: put_str not working
+            c_char_p(msg), 10, 10)
+        input(msg)
         if pwd_chrs.__len__() - pwd_chrs.count("-") == pwd_len:
             new_pwd_chrs = pwd_chrs
             logging.debug("pwd set at {}".format(pwd_chrs))

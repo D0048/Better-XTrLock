@@ -9,6 +9,20 @@
 #define OVERRIDE True
 //#define OVERRIDE False
 
+#define DEBUG
+
+#ifdef DEBUG
+#define debug_print(...)             \
+        do {                         \
+                printf(__VA_ARGS__); \
+        } while (0)
+#else
+#define debug_print(...) \
+        do {             \
+        } while (0)
+#endif
+
+
 Display *display;
 int screen;
 Window win,blank_win, trans_window;
@@ -92,6 +106,7 @@ void mask_clear(){
 void put_str(char* txt, int x, int y){
         XDrawString(display, win, gc, x, y, txt, strlen(txt));
         XFlush(display);
+        debug_print("Added %s on the screen\n",txt);
 }
 
 
