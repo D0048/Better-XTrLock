@@ -496,6 +496,8 @@ int main(int argc, char** argv)
         while ((opt = getopt_long(argc, argv, "hp:e:c:lbd:nk", long_options, NULL)) != -1) {
                 debug_print("Processing args: \"%c|%c\"\n", opt, optopt);
 
+                if(255==opt) break; /*supporting getopt on arm devices*/
+
                 if ('h' == opt) { /*help(no arg)*/
                         print_help();
                         exit(0);
