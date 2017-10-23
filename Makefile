@@ -61,7 +61,7 @@ install.on_lid:
 	rm -f on-lid-close.sh.tmp
 
 install.gesture_support:
-	$(INSTALL) -c -m 754 -i root ./mouse_gesture/xtrlock-gesture.py /usr/bin/xtrlock-gesture
+	$(INSTALL) -c -m 754 -o root ./mouse_gesture/xtrlock-gesture.py /usr/bin/xtrlock-gesture
 	echo "Please check the manual or https://github.com/D0048/Better-XTrLock for futher support of setting up the gesture support..."
 
 remove:
