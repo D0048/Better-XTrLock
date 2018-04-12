@@ -32,6 +32,12 @@ xtrlock.o:	xtrlock.c
 mask.so: ./mouse_gesture/mask.c
 	$(CC) -fPIC -shared -o $(MASK_PATH)mask.so $(MASK_PATH)mask.c -lX11
 
+mask_test: ./mouse_gesture/mask.c
+	$(CC) -o $(MASK_PATH)mask_test.bin $(MASK_PATH)mask.c -lX11 -DDEBUG
+	@echo 'Test Start:'
+	-timeout 2 $(MASK_PATH)mask_test.bin
+	@echo '-----------------Test End-----------------'
+
 debug:
 	$(CC) xtrlock.c $(LDLIBS) $(CFLAGS) $(CDEFS) -DDEBUG -g -o xtrlock
 
@@ -62,7 +68,7 @@ install.on_lid:
 
 install.gesture_support:
 	$(INSTALL) -c -m 754 -o root ./mouse_gesture/xtrlock-gesture.py /usr/bin/xtrlock-gesture
-	echo "Please check the manual or https://github.com/D0048/Better-XTrLock for futher support of setting up the gesture support..."
+	@echo "Please check the manual or https://github.com/D0048/Better-XTrLock for futher support of setting up the gesture support..."
 
 remove:
 	$(RM) /usr/bin/xtrlock
