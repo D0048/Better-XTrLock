@@ -32,13 +32,7 @@ xtrlock.o:	xtrlock.c
 mask.so: ./mouse_gesture/mask.c
 	$(CC) -fPIC -shared -o $(MASK_PATH)mask.so $(MASK_PATH)mask.c -lX11
 
-mask_test: ./mouse_gesture/mask.c
-	$(CC) -o $(MASK_PATH)mask_test.bin $(MASK_PATH)mask.c -lX11 -DDEBUG
-	@echo 'Test Start:'
-	-timeout 2 $(MASK_PATH)mask_test.bin
-	@echo '-----------------Test End-----------------'
-
-debug:
+debug:	./xtrlock.c
 	$(CC) xtrlock.c $(LDLIBS) $(CFLAGS) $(CDEFS) -DDEBUG -g -o xtrlock
 
 clean:
@@ -68,12 +62,27 @@ install.on_lid:
 	rm -f on-lid-close.sh.tmp
 	@echo "Successfully installed activation"
 
-install.gesture_support:
-	$(INSTALL) -c -m 754 -o root ./mouse_gesture/xtrlock-gesture.py /usr/bin/xtrlock-gesture
+mask_test: ./mouse_gesture/mask.c
+	$(CC) -o $(MASK_PATH)mask_test.bin $(MASK_PATH)mask.c -lX11 -DDEBUG
+	@echo 'Test Start:'
+	-timeout 2 $(MASK_PATH)mask_test.bin
+	@echo '-----------------Test End-----------------'
+
+clean.gesture_support:
+	-rm -f ./mouse_gesture/mask_test.bin
+	-rm -f ./mouse_gesture/mask.so
+
+install.gesture_support: ./mouse_gesture/mask.so ./mouse_gesture/xtrlock-gesture.py
+	$(INSTALL) -c -m 755 -o root ./mouse_gesture/xtrlock-gesture.py /usr/bin/xtrlock-gesture
+	$(INSTALL) -c -m 755 -o root ./mouse_gesture/mask.so $(CONFIGPATH)
 	@echo "Please check the manual or https://github.com/D0048/Better-XTrLock for futher support of setting up the gesture support..."
 
+remove.gesture_support:
+	-$(RM) -f /usr/bin/xtrlock-gesture
+	-$(RM) -f $(CONFIGPATH)mask.so
+
 remove:
-	$(RM) /usr/bin/xtrlock
-	$(RM) -rf $(CONFIGPATH)
-	$(RM) -f /usr/share/bash-completion/completions/xtrlock
-	$(RM) -f /etc/acpi/on-lid-close.sh /etc/acpi/events/xtrlock-lid-down
+	-$(RM) /usr/bin/xtrlock
+	-$(RM) -rf $(CONFIGPATH)
+	-$(RM) -f /usr/share/bash-completion/completions/xtrlock
+	-$(RM) -f /etc/acpi/on-lid-close.sh /etc/acpi/events/xtrlock-lid-down

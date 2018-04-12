@@ -44,6 +44,8 @@ class Block:
     x2 = 100
     y2 = 100
     value = "nah"
+    clicked = False
+    is_master = False
 
     def __init__(self, x1=0, y1=0, x2=100, y2=100, value="nah"):
         self.x1 = x1
@@ -55,9 +57,37 @@ class Block:
 
     def check(self, x, y):
         if (x >= self.x1 and x <= self.x2 and y >= self.y1 and y <= self.y2):
+            if not self.clicked:
+                if not self.is_master:
+                    self.click()
+                self.clicked = True
             return True
         else:
+            if self.clicked:
+                if not self.is_master:
+                    self.draw()
+                self.clicked = False
             return False
+        pass
+
+    def erase(self):
+        mask.erase_square_screen_coord(
+            int(self.x1), int(self.y1), int(self.x2), int(self.y2))
+        mask.erase_square_screen_coord(
+            int(self.x1 + 10), int(self.y1 + 10), int(self.x2 - 10),
+            int(self.y2 - 10))
+        pass
+
+    def click(self):
+        mask.draw_square_screen_coord(
+            int(self.x1 + 10), int(self.y1 + 10), int(self.x2 - 10),
+            int(self.y2 - 10))
+        pass
+
+    def draw(self):
+        self.erase()
+        mask.draw_square_screen_coord(
+            int(self.x1), int(self.y1), int(self.x2), int(self.y2))
         pass
 
     def info(self):
@@ -110,8 +140,8 @@ def on_move(x, y):
         if pwd_chrs.__len__() - pwd_chrs.count("-") == pwd_len and hash(
                 pwd_chrs) == pwd_hsh:
             #******************************Correct exit*********************************#
-            logging.info(
-                "Successfully unlocked:{} / {}".format(pwd_chrs, pwd_hsh))
+            logging.info("Successfully unlocked:{} / {}".format(
+                pwd_chrs, pwd_hsh))
             screen_lock(False)
             os.kill(os.getpid(), signal.SIGTERM)
             pass
@@ -128,8 +158,8 @@ def on_click(x, y, button, pressed):
 
 
 def on_scroll(x, y, dx, dy):
-    logging.debug(
-        'Scrolled {0} at {1}'.format('down' if dy < 0 else 'up', (x, y)))
+    logging.debug('Scrolled {0} at {1}'.format('down'
+                                               if dy < 0 else 'up', (x, y)))
 
 
 def kb_init():
@@ -164,6 +194,24 @@ def create_default(path):
     pass
 
 
+def loadLibMask(mask_lib_path):
+    err = None
+    global mask
+    try:
+        mask = cdll.LoadLibrary(mask_lib_path)  #load mask.so
+    except Exception as err:
+        try:
+            mask = cdll.LoadLibrary(
+                "./mask.so")  #load mask.so, for testing purpose only
+        except:
+            logging.critical("Can not read mask.so: " + str(err))
+            sys.exit(-1)
+            pass
+        pass
+    mask.init_x()
+    pass
+
+
 def main():  #TODO: display, setup.py
     global isGen
     global mouse_x
@@ -175,7 +223,7 @@ def main():  #TODO: display, setup.py
     logging.basicConfig(level=logging.INFO)  #logging init
 
     parser = argparse.ArgumentParser(description='xtrlock')  #arg handle init
-    parser.add_argument(  #log level?
+    parser.add_argument(  # log level?
         '-l',
         '--log-level',
         action='store',
@@ -184,7 +232,7 @@ def main():  #TODO: display, setup.py
         help=
         "the logging level. e.g: 10 for debug, 20 for info, 30 for warning(default), 40 for error, 50 for critical.",
         default=logging.WARN)
-    parser.add_argument(  #log file?
+    parser.add_argument(  # log file?
         '-f',
         '--log-file',
         action='store',
@@ -193,7 +241,7 @@ def main():  #TODO: display, setup.py
         help="the file path to the log file",
         default="nah")
 
-    parser.add_argument(  #gen?
+    parser.add_argument(  # gen?
         '-g',
         '--gen',
         action='store',
@@ -201,7 +249,7 @@ def main():  #TODO: display, setup.py
         dest="gen",
         help="record pwd and generate the config file (please use -g1)",
         default=False)
-    parser.add_argument(  #config file?
+    parser.add_argument(  # config file?
         '-c',
         '--config-file',
         action='store',
@@ -209,13 +257,22 @@ def main():  #TODO: display, setup.py
         dest="config_file",
         help="specify the config file to use/write, default as ~/xtrlock.conf",
         default=os.path.expanduser("~/.xtrlock.conf"))
+    parser.add_argument(  # Shared library location?
+        '-m',
+        '--mask-lib-location',
+        action='store',
+        type=str,
+        dest="mask_lib_path",
+        help=
+        "specify the path to mask.so, dafault as /usr/share/xtrlock/mask.so",
+        default="/usr/share/xtrlock/mask.so")
 
     args = parser.parse_args()
 
     if args.log_file == "nah":  #logging handle
         logging.basicConfig(level=args.log_level)
-        logging.info(
-            "Using log level {} without log file".format(args.log_level))
+        logging.info("Using log level {} without log file".format(
+            args.log_level))
         pass
     else:
         logging.basicConfig(filename=args.log_file, level=args.log_level)
@@ -229,13 +286,11 @@ def main():  #TODO: display, setup.py
 
     global config_file
     config_file = args.config_file
-    logging.info(
-        "Using config file: {}".format(args.config_file))  #where to record
+    logging.info("Using config file: {}".format(
+        args.config_file))  #where to record
 
-    global mask
-
-    mask = cdll.LoadLibrary('./mask.so')  #load mask.so
-    mask.init_x()
+    # Load mask module
+    loadLibMask(args.mask_lib_path)
 
     if (isGen):  #generate
         #kb_t = threading.Thread(target=kb_init, args=())
@@ -318,6 +373,7 @@ def read_conf(cp):
     pass
 
 
+# Used for reconfigure gesture module configurations and update config file
 def update_conf(path, cp):
     print("Please enter the new configuration (enter to use the old value)")
     #xtrlock_path
@@ -398,8 +454,9 @@ def update_conf(path, cp):
         new_hsh = hash(pwd_chrs)  #critical
         wipe_pwd()
         pwd_hsh = new_hsh
-        logging.info("New password {} set with hashed value {}".format(
+        logging.debug("New password {} set with hashed value {}".format(
             new_pwd_chrs, pwd_hsh))
+        logging.info("New password set.")
         cp.set(section="Setting", option="PwdHsh", value=pwd_hsh)
         #wipe_pwd()
         pass
@@ -435,6 +492,7 @@ def update_blocks(x1, y1, x2, y2, section_w=3, section_h=3, gap_rate=0.13):
     #find label
     global block_total
     block_total = Block(x1, y1, x2, y2)
+    block_total.is_master = True
     logging.info("Master block created: {}".format(block_total.info()))
 
     gapx = abs(x2 - x1) * gap_rate
@@ -443,8 +501,9 @@ def update_blocks(x1, y1, x2, y2, section_w=3, section_h=3, gap_rate=0.13):
     block_w = int((abs(x2 - x1) - (gapx * (section_w - 1))) / (section_w))
     block_h = int((abs(y2 - y1) - (gapy * (section_h - 1))) / (section_h))
 
-    logging.info("W per block: {} with gap {}, H per block: {} with gap {}".
-                 format(gapx, block_w, block_h, gapy))
+    logging.info(
+        "W per block: {} with gap {}, H per block: {} with gap {}".format(
+            gapx, block_w, block_h, gapy))
 
     block_value = 1
     buf_x1, buf_y1, buf_x2, buf_y2 = x1, y1, x1 + block_w, y1 + block_h
@@ -471,11 +530,14 @@ def update_blocks(x1, y1, x2, y2, section_w=3, section_h=3, gap_rate=0.13):
 def draw_blocks():
     global mask, blocks
     #display block at window
-    logging.info("blocks drew")
+    logging.debug("blocks drew")
+    # block_total.draw()
+
     for block in blocks:
-        mask.draw_squre_screen_coord(
-            int(block.x1), int(block.y1), int(block.x2), int(block.y2))
-        #mask.add_text(block)
+        block.draw()
+        # mask.add_text(block)
+        #mask.draw_square_screen_coord(
+        #    int(block.x1), int(block.y1), int(block.x2), int(block.y2))
         pass
     pass
 

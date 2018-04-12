@@ -9,7 +9,7 @@
 #define OVERRIDE True
 //#define OVERRIDE False
 
-#define DEBUG
+/*#define DEBUG*/
 
 #ifdef DEBUG
 #define debug_print(...)             \
@@ -28,10 +28,12 @@ int screen;
 Window win,blank_win, trans_window;
 GC gc;
 
-unsigned long black,white;
+unsigned long black,white,bgcol,fgcol;
 XSetWindowAttributes attrib;
 void init_x();
+bool square_screen_coord(int x1, int y1, int x2, int y2,unsigned long col);
 bool draw_square_screen_coord(int x1, int y1, int x2, int y2);
+bool erase_square_screen_coord(int x1, int y1, int x2, int y2);
 void mask_show();
 void mask_hide();
 void mask_clear();
@@ -45,6 +47,7 @@ int main(){
     init_x();
     mask_show();
     draw_square_screen_coord(0,0,100,100);
+    erase_square_screen_coord(0,0-10,100+10,100+10);
     draw_square_screen_coord(-100,-100,100,100);
     draw_square_screen_coord(100,100,200,200);
     draw_square_screen_coord(200,200,300,300);
@@ -74,9 +77,20 @@ void init_x() {
     win=blank_win;
     //XMapWindow(display,win);
     gc=XCreateGC(display, win, 0,0);
+    XSetBackground(display,gc,bgcol=white);
+    XSetForeground(display,gc,fgcol=black);
     XSync(display, False);
 }
+bool erase_square_screen_coord(int x1, int y1, int x2, int y2){
+    square_screen_coord(x1,y1,x2,y2,bgcol);
+}
+
 bool draw_square_screen_coord(int x1, int y1, int x2, int y2){
+    square_screen_coord(x1,y1,x2,y2,fgcol);
+}
+
+bool square_screen_coord(int x1, int y1, int x2, int y2,unsigned long col){
+    XSetForeground(display,gc,col);
     int x=(x1+x2)/2;
     int y=(y1+y2)/2;
     int sizex=abs(x1-x2)/2;
