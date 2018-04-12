@@ -42,6 +42,7 @@ debug:
 	$(CC) xtrlock.c $(LDLIBS) $(CFLAGS) $(CDEFS) -DDEBUG -g -o xtrlock
 
 clean:
+	-rm -f *.tmp
 	-rm -f xtrlock.o xtrlock
 	-rm -f $(MASK_PATH)mask.o
 	-rm -f $(MASK_PATH)mask.so
@@ -60,11 +61,12 @@ install.bash_completion:
 	$(INSTALL) -c -m 754 xtrlock-completion.sh /usr/share/bash-completion/completions/xtrlock
 
 install.on_lid:
-	cp ./on-lid-close.sh on-lid-close.sh.tmp
+	cp ./on_lid/on-lid-close.sh on-lid-close.sh.tmp
 	sed 's/xtrlock -l/$(LID_CMD)/g' on-lid-close.sh.tmp > tmp && mv tmp on-lid-close.sh.tmp
-	$(INSTALL) -c -m 744 -o root xtrlock-lid-down /etc/acpi/events/xtrlock-lid-down
+	$(INSTALL) -c -m 744 -o root ./on_lid/xtrlock-lid-down /etc/acpi/events/xtrlock-lid-down
 	$(INSTALL) -c -m 744 -o root ./on-lid-close.sh.tmp /etc/acpi/on-lid-close.sh
 	rm -f on-lid-close.sh.tmp
+	@echo "Successfully installed activation"
 
 install.gesture_support:
 	$(INSTALL) -c -m 754 -o root ./mouse_gesture/xtrlock-gesture.py /usr/bin/xtrlock-gesture
