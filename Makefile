@@ -55,10 +55,10 @@ install:	xtrlock
 	$(INSTALL) -c -m 644 resources/warn.png $(CONFIGPATH)
 
 install.man:
-	$(INSTALL) -c -m 644 xtrlock.man /usr/share/man/man1/xtrlock.1x
+	$(INSTALL) -c -m 644 ./man/xtrlock.man /usr/share/man/man1/xtrlock.1x
 
 install.bash_completion:
-	$(INSTALL) -c -m 754 xtrlock-completion.sh /usr/share/bash-completion/completions/xtrlock
+	$(INSTALL) -c -m 755 xtrlock-completion.sh /usr/share/bash-completion/completions/xtrlock
 
 install.on_lid:
 	cp ./on_lid/on-lid-close.sh on-lid-close.sh.tmp
