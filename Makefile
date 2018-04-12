@@ -40,6 +40,7 @@ clean:
 	-rm -f xtrlock.o xtrlock
 	-rm -f $(MASK_PATH)mask.o
 	-rm -f $(MASK_PATH)mask.so
+	$(MAKE) clean.gesture_support
 
 install:	xtrlock
 	$(INSTALL) -c -m 2755 -o root -g shadow xtrlock /usr/bin
