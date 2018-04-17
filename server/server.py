@@ -17,12 +17,12 @@ import signal
 import subprocess
 import logging
 import socket
+import time
+import timeout_decorator
 
 global sock
 global connections
 connections = []
-global configs
-configs = {}
 
 
 class Connection:
@@ -42,6 +42,7 @@ class Connection:
     def unregister(self):
         global connections
         try:
+            self.sock.close()
             connections.remove(self)
         except Exception as e:
             logging.warn("Exception in unregister connection {}: {}".format(
@@ -52,24 +53,15 @@ def init_socket(args):
     global sock
     server_address = args.server_socket_address
     if os.path.exists(server_address):
-        logging.warn("Server socket file {} already exist, overriding.".format(
-            server_address))
+        logging.warn(
+            "Server socket file {} already exists, overriding.".format(
+                server_address))
         os.remove(server_address)
     logging.info("Listening on: {}".format(server_address))
     sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
     sock.bind(server_address)
-    sock.listen(1)
+    sock.listen(0)
     pass
-
-
-def connection_handler(conn):
-    try:
-        pass
-    except Exception as e:
-        pass
-    finally:
-        conn.unregister()
-    end
 
 
 def logging_init(args):
@@ -87,66 +79,42 @@ def logging_init(args):
 
 
 def config_init(args):
-    global configs
-    global config_file
-    config_file = args.config_file
-    logging.info("Using config file: {}".format(
-        args.config_file))  #where to record
+    global cmds, user
+    cmds = args.lock_cmd.split(":")
+    user = args.user
+    pass
 
-    # File not there
-    if not os.access(config_file, os.R_OK) or not os.path.exists(
-            config_file) or not os.path.isfile(config_file):
-        logging.warn("config file not found, generating:")
-        create_default_config_file(config_file)
-        pass
 
-    # Try read config file
+# @timeout_decorator.timeout(1)
+def connection_handler(conn):
     try:
-        logging.info("Reading config file from: " + config_file)
-        cp = configparser.ConfigParser()
-        cp.read(config_file, encoding="utf-8-sig")
-        read_conf(cp)
+        logging.info("Connection established, waiting for request")
+        conn.sock.recv(1)
+        logging.info("Lock request received")
+        global user, cmds
+        trigger_screen_lock(user, cmds[0])
+        pass
     except Exception as e:
-        logging.error(
-            "Failed to read config file, config backed up at .bak, now creating default: "
-            + str(e))
-        open(
-            config_file + ".bak",  #backup the old broken config
-            "w+").writelines(open(config_file, "r+"))
-        create_default_config_file(config_file)
-        logging.warn(
-            "Config file with the default settings has been created "
-            "at the designated directory. The old file has been backed up with .bak suffix."
-        )
+        logging.error("Error in connection handle: {}".format(str(e)))
         pass
-    pass
-
-
-def create_default_config_file(path):
-    logging.info("Pharsing default and writing to " + path)
-    config = configparser.ConfigParser()
-    config.add_section(section="Setting")
-    global configs
-    for key in configs.keys():
-        config.set(section="Setting", option=key, value=str(configs.get(key)))
-    # config.set(section="Setting", option="LockCommand", value='xtrlock -l')
-    # config.set(section="Setting", option="AllowRequestSettingOverride", value='true')
-    config.write(open(path, 'w+', encoding='utf_8_sig'))
-    pass
-
-
-def read_conf(cp):
-    # TODO: read conf
-    global configs
-    for key in configs.keys():
+    finally:
+        conn.unregister()
+        sys.exit(-1)
         pass
+    sys.exit(0)
 
+
+def trigger_screen_lock(usr, cmd):
+    logging.info("As |{}| running cmd |{}|".format(usr, cmd))
+    os.system("sudo -u " + usr + " \'" + cmd + "\'")
+    # os.system(cmd)
     pass
 
 
 def main():
     logging.basicConfig(level=logging.INFO)
 
+    # TODO: test client
     parser = argparse.ArgumentParser(description='xtrlock')
     parser.add_argument(  # log level
         '-v',
@@ -165,24 +133,6 @@ def main():
         dest="log_file",
         help="the file path to the log file",
         default="nah")
-    parser.add_argument(  # Server file to listen
-        '-s',
-        '--server-socket-location',
-        action='store',
-        type=str,
-        dest="server_socket_address",
-        help=
-        "The socket file used for other triggers to request a lock/unlock function, default as /tmp/xtrlock_server_trigger",
-        default="/tmp/xtrlock_server_trigger")
-    parser.add_argument(  # config file?
-        '-c',
-        '--config-file',
-        action='store',
-        type=str,
-        dest="config_file",
-        help=
-        "specify the config file to use/write, default as ~/xtrlock_server.conf",
-        default=os.path.expanduser("~/.xtrlock_server.conf"))
     parser.add_argument(  # Command to execute
         '-l',
         '--lock-cmd',
@@ -190,8 +140,8 @@ def main():
         type=str,
         dest="lock_cmd",
         help=
-        "The command used to lock screen, which could be set to trigger programs like xscreensaver other than xtrlock, default as `xtrlock -l`",
-        default="xtrlock -l")
+        "The command used to lock screen, which could be set to trigger programs like xscreensaver other than xtrlock, default as `xtrlock -l`, separate multiple command with :",
+        default="xtrlock -p 123")
     parser.add_argument(  # User to run as
         '-u',
         '--user',
@@ -201,12 +151,21 @@ def main():
         help=
         "The user used to execute the lock command, it is recommended to create a new user with no permissions but to the screen lock utility, for safety. Default as current user",
         default=os.environ["USER"])
+    parser.add_argument(  # Server file to listen
+        '-s',
+        '--server-socket-location',
+        action='store',
+        type=str,
+        dest="server_socket_address",
+        help=
+        "The socket file used for other triggers to request a lock/unlock function, default as /tmp/xtrlock_server_trigger",
+        default="/tmp/xtrlock_server_trigger")
     args = parser.parse_args()
 
     logging_init(args)
     config_init(args)
 
-    # =============== Arg Handling Complete==========================
+    # =============== Arg Handling Complete ==========================
 
     global sock
     try:
@@ -220,8 +179,9 @@ def main():
     global running, connections
     running = True
     while running:
-        conn = Connection(sock.accept())
-        handle = threading.Thread(target=connection_handler, args=(conn))
+        s, addr = sock.accept()
+        conn = Connection(s)
+        handle = threading.Thread(target=connection_handler, args=([conn]))
         handle.start()
         pass
 
