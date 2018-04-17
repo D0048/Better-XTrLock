@@ -106,8 +106,8 @@ def connection_handler(conn):
 
 def trigger_screen_lock(usr, cmd):
     logging.info("As |{}| running cmd |{}|".format(usr, cmd))
-    os.system("sudo -u " + usr + " \'" + cmd + "\'")
-    # os.system(cmd)
+    os.system("sudo -u " + usr + " " + cmd)
+    # os.system("sudo -u d0048 xtrlock -p 123")
     pass
 
 
