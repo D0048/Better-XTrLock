@@ -115,7 +115,7 @@ def main():
     logging.basicConfig(level=logging.INFO)
 
     # TODO: test client
-    parser = argparse.ArgumentParser(description='xtrlock')
+    parser = argparse.ArgumentParser(description='xtrlock-gesture')
     parser.add_argument(  # log level
         '-v',
         '--verbose-level',
@@ -190,6 +190,7 @@ def main():
     pass
 
 
+# Retrieved from Internet: stackoverflow.com
 def _async_raise(tid, exctype):
     """raises the exception, performs cleanup if needed"""
     tid = ctypes.c_long(tid)
