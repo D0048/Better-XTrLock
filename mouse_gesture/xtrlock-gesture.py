@@ -103,12 +103,12 @@ block_total = Block()
 
 
 def on_press(key):
-    #logging.debug('{0} pressed'.format(key))
+    logging.debug('{0} pressed'.format(key))
     pass
 
 
 def on_release(key):
-    #logging.debug('{0} release'.format(key))
+    logging.debug('{0} release'.format(key))
     pass
 
 
@@ -117,22 +117,18 @@ def on_move(x, y):
     #if do_output: logging.info('Pointer moved to {0}'.format((x, y)))
     global lock_mx, lock_my
     global blocks, block_total, lock
-    lock_mx = x
-    lock_my = y
+    lock_mx, lock_my = x, y
     #with lock:
-    if (lock.acquire()):
-        if block_total.check(x, y):
-            for b in blocks:
-                if b.check(x,
-                           y) and b.value != "nah" and b.value != pwd_chrs[-1]:
-                    if len(pwd_chrs) < pwd_len:  #len<
-                        pwd_chrs += b.value
-                        pass
-                    else:  #len=>
-                        pwd_chrs = pwd_chrs[1:] + b.value
-                        pass
-                    if do_output: print(b.value + ":" + pwd_chrs + "\r")
+    if (lock.acquire() and block_total.check(x, y)):
+        for b in blocks:
+            if b.check(x, y) and b.value != "nah" and b.value != pwd_chrs[-1]:
+                if len(pwd_chrs) < pwd_len:  #len<
+                    pwd_chrs += b.value
                     pass
+                else:  #len=>
+                    pwd_chrs = pwd_chrs[1:] + b.value
+                    pass
+                if do_output: print(b.value + ":" + pwd_chrs + "\r")
                 pass
             pass
 
@@ -473,12 +469,9 @@ def wipe_pwd():
 
 
 def update_blocks(x1, y1, x2, y2, section_w=3, section_h=3, gap_rate=0.13):
-    global trigger
-    global isGen
-    global mouse_x
-    global lock_mx
-    global mouse_y
-    global lock_my
+    global trigger, isGen
+    global mouse_x, mouse_y
+    global lock_mx, lock_my
     #regularize x1->x2, y1->y2: 0->100, 0->100 x=l2r,y=u2d
     if (x1 > x2):
         x1, x2 = x2, x1
@@ -523,6 +516,7 @@ def update_blocks(x1, y1, x2, y2, section_w=3, section_h=3, gap_rate=0.13):
         buf_x1 = x1
         buf_x2 = x1 + block_w
         pass
+    # Don't draw immediately after update -> not sure if master logic wants that
     #draw_blocks()
     pass
 

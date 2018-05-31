@@ -1,0 +1,67 @@
+.TH XTRLOCK-SERVER 1
+.SH NAME
+xtrlock-server \- Lock X display until password supplied or pattern drawn
+.SH SYNOPSIS
+.B A modified version of xtrlock-server with more functions implemented. 
+.SH DESCRIPTION
+.B xtrlock-server
+locks the X server till the user enters their password or draws pre-designated server.
+
+While
+.B xtrlock-server
+is running, it listens to any request of arbitrary program behaving identical to the trigger 
+method contained in `triggerlib.py`, and lock the screen with predesignated command. Request 
+not consistent with that defined in `triggerlib.py` may cause unpredicted behavior. 
+
+There are a hand of example triggers located at `server/trigger`, which could be referred for 
+further example utilization.
+
+.SH OPTIONS: 
+      -h, --help            show this help message and exit
+
+      -v VERBOSE_LEVEL, --verbose-level VERBOSE_LEVEL
+                        the logging level. e.g: 10 for debug, 20 for info, 30
+                        for warning(default), 40 for error, 50 for critical,
+                        default as INFO(20).
+
+      -f LOG_FILE, --log-file LOG_FILE
+                        the file path to the log file
+
+      -l LOCK_CMD, --lock-cmd LOCK_CMD
+                        The command used to lock screen, which could be set to
+                        trigger programs like xscreensaver other than xtrlock,
+                        default as `xtrlock -l`, separate multiple command
+                        with :
+
+      -u USER, --user USER  The user used to execute the lock command, it is
+                        recommended to create a new user with no permissions
+                        but to the screen lock utility, for safety. Default as
+                        current user
+
+      -s SERVER_SOCKET_ADDRESS, --server-socket-location SERVER_SOCKET_ADDRESS
+                        The socket file used for other triggers to request a
+                        lock/unlock function, default as
+                        /tmp/xtrlock_server_trigger
+
+.SH X RESOURCES, CONFIGURATION:
+None.
+.SH BUGS
+May cause screen flicker if waked from suspension with screen locked. 
+
+The timeouts cannot be modifed.
+.SH SEE ALSO
+.BR X "(1), Xlib Documentation."
+.SH AUTHOR
+Ian Jackson <ian@chiark.greenend.org.uk>
+.SH COPYRIGHT
+Copyright (C) 1993, 1994 by Ian Jackson.
+
+Permission to use, copy, modify and distribute this software and its
+documentation is granted under the terms of the GNU General Public
+Licence, version 2 or later, as published by the Free Software
+Foundation.
+
+This program is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
